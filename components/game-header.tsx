@@ -1,0 +1,170 @@
+"use client"
+
+import { Star, Users, TrendingUp, Award, Settings, Coffee, ShoppingBag, HelpCircle, Sparkles } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { logError } from "@/lib/error-utils"
+
+interface GameHeaderProps {
+  coins: number
+  level: number
+  passiveIncome: number
+  angelInvestors: number
+  prestigeLevel: number
+  onShowManagers: () => void
+  onShowUpgrades: () => void
+  onShowStats: () => void
+  onShowAchievements: () => void
+  onShowPremiumShop: () => void
+  onShowFAQ: () => void
+  onShowPrestigeShop: () => void
+  onShowMiniGames: () => void
+}
+
+// Modify the formatNumber function to include error handling
+function formatNumber(value: number): string {
+  try {
+    if (isNaN(value)) return "0"
+
+    // Format with at most 2 decimal places
+    const formatted = value.toFixed(2)
+
+    // Remove trailing zeros and decimal point if it's a whole number
+    return Number(formatted).toString()
+  } catch (error) {
+    logError(error, "formatNumber in GameHeader")
+    return "0"
+  }
+}
+
+// Update the component to include the Prestige Shop button
+export default function GameHeader({
+  coins,
+  level,
+  passiveIncome,
+  angelInvestors,
+  prestigeLevel,
+  onShowManagers,
+  onShowUpgrades,
+  onShowStats,
+  onShowAchievements,
+  onShowPremiumShop,
+  onShowFAQ,
+  onShowPrestigeShop,
+  onShowMiniGames,
+}: GameHeaderProps) {
+  // Format passive income
+  const formatPassiveIncome = (income: number) => {
+    if (income >= 1e12) return `${(income / 1e12).toFixed(2)}T/s`
+    if (income >= 1e9) return `${(income / 1e9).toFixed(2)}B/s`
+    if (income >= 1e6) return `${(income / 1e6).toFixed(2)}M/s`
+    if (income >= 1e3) return `${(income / 1e3).toFixed(2)}K/s`
+    return `${income.toFixed(2)}/s`
+  }
+
+  return (
+    <header className="bg-gradient-to-r from-amber-900 to-amber-800 p-3 shadow-md sticky top-0 z-20 border-b border-amber-700">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-wrap justify-between items-center gap-2">
+          <div className="flex items-center">
+            <Coffee className="h-8 w-8 mr-2 text-amber-400" />
+            <h1 className="text-xl font-bold text-amber-100">$GRIND: Bean Hustle</h1>
+          </div>
+
+          <div className="flex flex-wrap gap-2 text-sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowManagers}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+            >
+              <Users className="h-4 w-4 mr-1" />
+              Managers
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowUpgrades}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+            >
+              <TrendingUp className="h-4 w-4 mr-1" />
+              Upgrades
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowPrestigeShop}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+            >
+              <Sparkles className="h-4 w-4 mr-1" />
+              Prestige Shop
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowAchievements}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+            >
+              <Award className="h-4 w-4 mr-1" />
+              Achievements
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowStats}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+            >
+              <Settings className="h-4 w-4 mr-1" />
+              Stats
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowPremiumShop}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+            >
+              <ShoppingBag className="h-4 w-4 mr-1" />
+              Premium
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowFAQ}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+            >
+              <HelpCircle className="h-4 w-4 mr-1" />
+              FAQ
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowMiniGames}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+            >
+              <Coffee className="h-4 w-4 mr-1" />
+              Mini Games
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-3 text-sm">
+            <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
+              <Star className="h-4 w-4 mr-2 text-amber-300" />
+              <span>
+                Level <span className="font-bold">{level}</span>
+              </span>
+            </div>
+            <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
+              <Sparkles className="h-4 w-4 mr-2 text-amber-300" />
+              <span>
+                $GRIND Beans <span className="font-bold">{angelInvestors}</span>
+              </span>
+            </div>
+            <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
+              <TrendingUp className="h-4 w-4 mr-2 text-green-400" />
+              <span className="text-green-400 font-bold">{formatPassiveIncome(passiveIncome)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}

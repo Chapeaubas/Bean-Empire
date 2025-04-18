@@ -1,8 +1,20 @@
 "use client"
 
-import { Star, Users, TrendingUp, Award, Settings, Coffee, ShoppingBag, HelpCircle, Sparkles } from "lucide-react"
+import {
+  Star,
+  Users,
+  TrendingUp,
+  Award,
+  Settings,
+  Coffee,
+  ShoppingBag,
+  HelpCircle,
+  Sparkles,
+  Coins,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logError } from "@/lib/error-utils"
+import { formatCurrency } from "@/lib/utils"
 
 interface GameHeaderProps {
   coins: number
@@ -61,6 +73,9 @@ export default function GameHeader({
     return `${income.toFixed(2)}/s`
   }
 
+  // Ensure coins value is safe
+  const safeCoins = isNaN(coins) ? 0 : coins
+
   return (
     <header className="bg-gradient-to-r from-amber-900 to-amber-800 p-3 shadow-md sticky top-0 z-20 border-b border-amber-700">
       <div className="max-w-7xl mx-auto">
@@ -70,7 +85,8 @@ export default function GameHeader({
             <h1 className="text-xl font-bold text-amber-100">$GRIND: Bean Hustle</h1>
           </div>
 
-          <div className="flex flex-wrap gap-2 text-sm">
+          {/* Desktop buttons (hidden on mobile) */}
+          <div className="hidden md:flex flex-wrap gap-2 text-sm">
             <Button
               variant="outline"
               size="sm"
@@ -145,6 +161,82 @@ export default function GameHeader({
             </Button>
           </div>
 
+          {/* Mobile buttons (hidden on desktop) */}
+          <div className="flex md:hidden flex-wrap gap-2 text-sm overflow-x-auto pb-2 max-w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowManagers}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              title="Managers"
+            >
+              <Users className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowUpgrades}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              title="Upgrades"
+            >
+              <TrendingUp className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowPrestigeShop}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              title="Prestige Shop"
+            >
+              <Sparkles className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowAchievements}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              title="Achievements"
+            >
+              <Award className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowStats}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              title="Stats"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowPremiumShop}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              title="Premium"
+            >
+              <ShoppingBag className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowFAQ}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              title="FAQ"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowMiniGames}
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              title="Mini Games"
+            >
+              <Coffee className="h-4 w-4" />
+            </Button>
+          </div>
+
           <div className="flex flex-wrap gap-3 text-sm">
             <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
               <Star className="h-4 w-4 mr-2 text-amber-300" />
@@ -157,6 +249,10 @@ export default function GameHeader({
               <span>
                 $GRIND Beans <span className="font-bold">{angelInvestors}</span>
               </span>
+            </div>
+            <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
+              <Coins className="h-4 w-4 mr-2 text-amber-300" />
+              <span className="font-bold">{formatCurrency(safeCoins)}</span>
             </div>
             <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
               <TrendingUp className="h-4 w-4 mr-2 text-green-400" />

@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { formatCurrency, formatNumber } from "@/lib/utils"
-import { Coffee, Coins, Zap, Sparkles } from "lucide-react"
+import { formatNumber } from "@/lib/utils"
+import { Sparkles } from "lucide-react"
 
 interface GlobalActionsBarProps {
   cash: number
@@ -53,37 +53,6 @@ export default function GlobalActionsBar({
   return (
     <div className="bg-gradient-to-r from-amber-800 to-amber-900 p-2 border-t border-amber-700 sticky bottom-0 z-10">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row flex-wrap justify-between items-center gap-2">
-        <div className="flex items-center space-x-2 w-full sm:w-auto mb-2 sm:mb-0">
-          <Button
-            variant="default"
-            className={`bg-gradient-to-r ${
-              safeReadyBusinesses > 0
-                ? "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 animate-pulse"
-                : "from-gray-500 to-gray-600"
-            } flex-1 sm:flex-none`}
-            onClick={onCollectAll}
-            disabled={safeReadyBusinesses === 0}
-          >
-            <Coffee className="h-4 w-4 mr-2" />
-            Collect All ({safeReadyBusinesses})
-            {safeReadyBusinesses > 0 && <span className="ml-2">+{formatCurrency(safeTotalRevenue)}</span>}
-          </Button>
-
-          <Button
-            variant="default"
-            className={`bg-gradient-to-r ${
-              safeIdleBusinesses > 0
-                ? "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-                : "from-gray-500 to-gray-600"
-            } flex-1 sm:flex-none`}
-            onClick={onStartAll}
-            disabled={safeIdleBusinesses === 0}
-          >
-            <Zap className="h-4 w-4 mr-2" />
-            Start All ({safeIdleBusinesses})
-          </Button>
-        </div>
-
         <div className="flex items-center space-x-2 w-full sm:w-auto">
           {showPrestigeConfirm ? (
             <div className="flex flex-wrap items-center gap-2 w-full justify-center sm:justify-end">
@@ -125,11 +94,6 @@ export default function GlobalActionsBar({
                 <Sparkles className="h-4 w-4 mr-2" />
                 Prestige ({isNaN(safePrestigeMultiplier) ? "0" : safePrestigeMultiplier}x)
               </Button>
-
-              <div className="bg-amber-700 rounded-lg px-3 py-1 flex items-center">
-                <Coins className="h-4 w-4 mr-2 text-amber-300" />
-                <span className="font-bold">{formatCurrency(safeCash)}</span>
-              </div>
             </div>
           )}
         </div>

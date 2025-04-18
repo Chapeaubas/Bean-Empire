@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import BusinessGrid from "@/components/business-grid"
 import GlobalActionsBar from "@/components/global-actions-bar"
 import GameHeader from "@/components/game-header"
@@ -469,11 +469,11 @@ export default function Home() {
   const [activeMiniGame, setActiveMiniGame] = useState<string | null>(null)
 
   // Error handler function
-  const handleError = (error: unknown, context: string) => {
+  const handleError = useCallback((error: unknown, context: string) => {
     logError(error, context)
     setHasError(true)
     setErrorMessage(error instanceof Error ? error.message : "An unknown error occurred")
-  }
+  }, [])
 
   // Refs to prevent infinite loops
   const businessStatesRef = useRef(businessStates)
@@ -653,7 +653,7 @@ export default function Home() {
   }
 
   // Calculate revenue for a business
-  const calculateRevenue = (businessId: string) => {
+  const calculateRevenue = useCallback((businessId: string) => {
     const business = initialBusinesses.find((b) => b.id === businessId)
     const state = businessStatesRef.current[businessId]
 
@@ -695,7 +695,7 @@ export default function Home() {
 
     // Ensure we return a valid number
     return isNaN(totalRevenue) ? 1 : Math.max(1, totalRevenue)
-  }
+  }, [])
 
   // Update the startBusiness function to ensure it works properly with the manager system
 
@@ -1981,7 +1981,7 @@ export default function Home() {
   }
 
   // Add this function to handle mini-game rewards, after the other game functions
-  const handleMiniGameComplete = (score: number, reward: number) => {
+  const handleMiniGameComplete = useCallback((score: number, reward: number) => {
     // Add the reward to the player's cash
     setCash((prev) => prev + reward)
     setLifetimeEarnings((prev) => prev + reward)
@@ -1995,10 +1995,10 @@ export default function Home() {
 
     // Close the mini-game
     setActiveMiniGame(null)
-  }
+  }, [])
 
   // Check for achievements
-  const checkAchievements = () => {
+  const checkAchievements = useCallback(() => {
     const newAchievements = { ...achievements }
     let changed = false
 
@@ -2053,37 +2053,40 @@ export default function Home() {
     if (changed) {
       setAchievements(newAchievements)
     }
-  }
+  }, [achievements, stats])
 
   // Get achievement progress
-  const getAchievementProgress = (achievement: any) => {
-    let current = 0
+  const getAchievementProgress = useCallback(
+    (achievement: any) => {
+      let current = 0
 
-    switch (achievement.requirement.type) {
-      case "earnings":
-        current = stats.totalEarnings
-        break
-      case "businesses":
-        current = stats.maxBusinessOwned
-        break
-      case "minigame":
-        current = stats.beanSortingHighScore
-        break
-      case "customers":
-        current = stats.totalCustomersServed
-        break
-      case "prestige":
-        current = stats.prestigeLevel
-        break
-    }
+      switch (achievement.requirement.type) {
+        case "earnings":
+          current = stats.totalEarnings
+          break
+        case "businesses":
+          current = stats.maxBusinessOwned
+          break
+        case "minigame":
+          current = stats.beanSortingHighScore
+          break
+        case "customers":
+          current = stats.totalCustomersServed
+          break
+        case "prestige":
+          current = stats.prestigeLevel
+          break
+      }
 
-    // Ensure we don't return NaN
-    const progress = (current / achievement.requirement.value) * 100
-    return isNaN(progress) ? 0 : Math.min(100, progress)
-  }
+      // Ensure we don't return NaN
+      const progress = (current / achievement.requirement.value) * 100
+      return isNaN(progress) ? 0 : Math.min(100, progress)
+    },
+    [stats],
+  )
 
   // Collect all ready businesses
-  const collectAllBusinesses = () => {
+  const collectAllBusinesses = useCallback(() => {
     let totalRevenue = 0
     const angelBonus = 1 + angelInvestors * getAngelEffectiveness()
     const prestigeBonus = prestigeLevel
@@ -2124,10 +2127,10 @@ export default function Home() {
         totalEarnings: prev.totalEarnings + totalRevenue,
       }))
     }
-  }
+  }, [angelInvestors, prestigeLevel, businessStates, calculateRevenue, premiumItems])
 
   // Start all idle businesses
-  const startAllBusinesses = () => {
+  const startAllBusinesses = useCallback(() => {
     const now = Date.now()
 
     setBusinessStates((prev) => {
@@ -2144,10 +2147,10 @@ export default function Home() {
       })
       return newState
     })
-  }
+  }, [])
 
   // Collect offline earnings
-  const collectOfflineEarnings = () => {
+  const collectOfflineEarnings = useCallback(() => {
     if (!offlineProgressData) return
 
     const safeEarnings = isNaN(offlineProgressData.totalEarned) ? 0 : offlineProgressData.totalEarned
@@ -2161,7 +2164,7 @@ export default function Home() {
 
     setShowOfflineProgress(false)
     setOfflineProgressData(null)
-  }
+  }, [offlineProgressData])
 
   // Update business progress
   useEffect(() => {
@@ -2211,7 +2214,7 @@ export default function Home() {
     }, 100) // Update every 100ms for smooth progress
 
     return () => clearInterval(interval)
-  }, [gameStarted])
+  }, [gameStarted, businessStates])
 
   // Setup manager system when the game starts or when managers change
   useEffect(() => {
@@ -2251,30 +2254,30 @@ export default function Home() {
   }, 0)
 
   // Calculate prestige multiplier and new $GRIND beans
-  const calculatePrestigeMultiplier = () => {
+  const calculatePrestigeMultiplier = useCallback(() => {
     const newAngels = Math.floor(Math.sqrt(lifetimeEarnings / 1e10))
     if (newAngels === 0) return 0
 
     const angelEffectiveness = getAngelEffectiveness()
     const multiplier = newAngels * angelEffectiveness
     return isNaN(multiplier) ? 0 : +multiplier.toFixed(2)
-  }
+  }, [lifetimeEarnings])
 
   // Get the number of new $GRIND beans that would be earned on prestige
-  const getNewAngels = () => {
+  const getNewAngels = useCallback(() => {
     return Math.floor(Math.sqrt(lifetimeEarnings / 1e10))
-  }
+  }, [lifetimeEarnings])
 
   // Check if player can prestige
   const canPrestige = calculatePrestigeMultiplier() > 0
 
   // Start the game
-  const handleStartGame = () => {
+  const handleStartGame = useCallback(() => {
     setGameStarted(true)
-  }
+  }, [])
 
   // Add these debug functions to the Home component
-  const resetManagerSystem = () => {
+  const resetManagerSystem = useCallback(() => {
     if (DEBUG) console.log("Resetting manager system")
 
     // Clear the existing timer
@@ -2285,9 +2288,9 @@ export default function Home() {
 
     // Setup the manager system again
     initializeManagerSystem()
-  }
+  }, [])
 
-  const fixAllBusinesses = () => {
+  const fixAllBusinesses = useCallback(() => {
     if (DEBUG) console.log("Fixing all businesses")
 
     // Update all businesses with managers to ensure they're in a valid state
@@ -2323,17 +2326,17 @@ export default function Home() {
 
     // Reset the manager system
     resetManagerSystem()
-  }
+  }, [businessStates, resetManagerSystem])
 
-  const clearLocalStorage = () => {
+  const clearLocalStorage = useCallback(() => {
     if (DEBUG) console.log("Clearing local storage")
     localStorage.clear()
-  }
+  }, [])
 
   // Add this function to the Home component
 
   // Force start all businesses with managers
-  const forceStartAllManagerBusinesses = () => {
+  const forceStartAllManagerBusinesses = useCallback(() => {
     if (DEBUG) console.log("Force starting all businesses with managers")
 
     // Get all businesses with managers
@@ -2362,7 +2365,7 @@ export default function Home() {
 
     // Reset the manager system
     resetManagerSystem()
-  }
+  }, [resetManagerSystem, updateBusinessState])
 
   // Wrap the entire return in an error boundary
   return (

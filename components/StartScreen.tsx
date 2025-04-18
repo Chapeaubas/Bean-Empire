@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -24,7 +26,7 @@ export default function StartScreen({ onStart }: { onStart: () => void }) {
             <motion.div
               className="relative w-full h-full"
               animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
             >
               <Image
                 src="/Startscreen1.png"
@@ -45,7 +47,7 @@ export default function StartScreen({ onStart }: { onStart: () => void }) {
                 onClick={handleStart}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: [0, 1, 0.8, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+                transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 px-6 rounded text-xl shadow-lg pixel-art-container"

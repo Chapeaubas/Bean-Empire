@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Sparkles, TrendingUp, Award, AlertTriangle, Info, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatNumber } from "@/lib/utils"
@@ -55,21 +55,21 @@ export default function PrestigeModal({
   const safeAngelEffectiveness = safeNumber(angelEffectiveness, 0.02)
 
   // Calculate prestige multiplier
-  const calculatePrestigeMultiplier = () => {
+  const calculatePrestigeMultiplier = useCallback(() => {
     return (1 + (safeAngelInvestors + safeNewAngels) * safeAngelEffectiveness).toFixed(2)
-  }
+  }, [safeAngelInvestors, safeNewAngels, safeAngelEffectiveness])
 
   // Calculate current multiplier
-  const calculateCurrentMultiplier = () => {
+  const calculateCurrentMultiplier = useCallback(() => {
     return (1 + safeAngelInvestors * safeAngelEffectiveness).toFixed(2)
-  }
+  }, [safeAngelInvestors, safeAngelEffectiveness])
 
   // Calculate next prestige level requirement
-  const calculateNextPrestigeRequirement = () => {
+  const calculateNextPrestigeRequirement = useCallback(() => {
     const nextLevel = safePrestigeLevel + 1
     const baseRequirement = 1e12 // 1 trillion
     return baseRequirement * Math.pow(nextLevel, 2)
-  }
+  }, [safePrestigeLevel])
 
   return (
     <BaseModal

@@ -171,14 +171,12 @@ export default function CoffeeMachine({
 
       <div className="mt-4">
         <Progress
-         value={isNaN(progress) ? 0 : progress}
-         className="h-2 bg-amber-100"
-         indicatorClassName={
-            progress >= 100
-              ? "bg-green-500 transition-all duration-300"
-              : "bg-amber-500 transition-all duration-300"
-  }
-/>
+          value={isNaN(progress) ? 0 : progress}
+          className="h-2 bg-amber-100"
+          indicatorClassName={
+            progress >= 100 ? "bg-green-500 transition-all duration-300" : "bg-amber-500 transition-all duration-300"
+          }
+        />
 
         <div className="text-center text-xs mt-1 text-amber-800 pixel-text">
           {brewing ? `${Math.floor(progress)}%` : progress >= 100 ? "Complete!" : "Ready to brew"}

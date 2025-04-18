@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
 import { ChevronDown, ChevronUp, Clock, Award } from "lucide-react"
@@ -145,13 +145,16 @@ export default function BusinessCard({
     }
   }, [isReady, isAnimating])
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (onClick) onClick()
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (onClick) onClick()
 
-    if (isReady) {
-      onCollect(e)
-    }
-  }
+      if (isReady) {
+        onCollect(e)
+      }
+    },
+    [isReady, onClick, onCollect],
+  )
 
   // Calculate how many businesses can be afforded with current cash
   const calculateMaxAffordable = () => {

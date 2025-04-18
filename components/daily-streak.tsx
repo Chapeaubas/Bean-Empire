@@ -123,12 +123,11 @@ export default function DailyStreak({
           <span>Progress to {nextMilestone.days}-day milestone</span>
           <span>{Math.floor(progress)}%</span>
         </div>
-       <Progress
-        value={isNaN(progress) ? 0 : progress}
-        className="h-2 bg-amber-900"
-        indicatorClassName="bg-gradient-to-r from-amber-400 to-yellow-300"
+        <Progress
+          value={isNaN(progress) ? 0 : progress}
+          className="h-2 bg-amber-900"
+          indicatorClassName="bg-gradient-to-r from-amber-400 to-yellow-300"
         />
-
       </div>
 
       <div className="flex justify-between items-center mb-4">

@@ -83,8 +83,10 @@ export default function BusinessCard({
   const [purchaseAmount, setPurchaseAmount] = useState<"x1" | "x10" | "x100" | "all">("x1")
   const [showCoffeeShopComic, setShowCoffeeShopComic] = useState(false)
   const [showCoffeeCarComic, setShowCoffeeCarComic] = useState(false)
+  const [showDriveThruComic, setShowDriveThruComic] = useState(false)
   const [hasSeenCoffeeShopComic, setHasSeenCoffeeShopComic] = useState(false)
   const [hasSeenCoffeeCarComic, setHasSeenCoffeeCarComic] = useState(false)
+  const [hasSeenDriveThruComic, setHasSeenDriveThruComic] = useState(false)
 
   // Use a default value if businessState is undefined
   const state = businessState || {
@@ -97,11 +99,19 @@ export default function BusinessCard({
     progress: 0,
   }
 
-  // Check if this is the Coffee Shop and it hasn't been purchased yet
-  const isCoffeeShopFirstPurchase = business.id === "coffee_shop" && state.owned === 0
+  // Determine which comics to potentially show
+  const canShowCoffeeShopComic = business.id === "coffee_shop" && state.owned === 0
+  const canShowCoffeeCarComic = business.id === "coffee_house" && state.owned === 0
+  const canShowDriveThruComic = business.id === "coffee_drive_thru" && state.owned === 0
+
+  // Check if this is the Coffee Shop (business #2) and it hasn't been purchased yet
+  // const isCoffeeShopFirstPurchase = business.id === "coffee_shop" && state.owned === 0
+
+  // Check if this is the Coffee Drive-Thru (business #4) and it hasn't been purchased yet
+  // const isDriveThruFirstPurchase = business.id === "coffee_drive_thru" && state.owned === 0
 
   // Check if this is the Coffee Car and it hasn't been purchased yet
-  const isCoffeeCarFirstPurchase = business.id === "coffee_house" && state.owned === 0
+  // const isCoffeeCarFirstPurchase = business.id === "coffee_house" && state.owned === 0
 
   // Load comic seen status from localStorage with error handling
   useEffect(() => {
@@ -109,6 +119,7 @@ export default function BusinessCard({
       if (typeof localStorage !== "undefined") {
         const shopComicSeen = localStorage.getItem("hasSeenCoffeeShopComic")
         const carComicSeen = localStorage.getItem("hasSeenCoffeeCarComic")
+        const driveThruComicSeen = localStorage.getItem("hasSeenDriveThruComic")
 
         if (shopComicSeen === "true") {
           setHasSeenCoffeeShopComic(true)
@@ -117,12 +128,17 @@ export default function BusinessCard({
         if (carComicSeen === "true") {
           setHasSeenCoffeeCarComic(true)
         }
+
+        if (driveThruComicSeen === "true") {
+          setHasSeenDriveThruComic(true)
+        }
       }
     } catch (error) {
       console.error("Error accessing localStorage:", error)
       // Default to not showing comics if localStorage fails
       setHasSeenCoffeeShopComic(true)
       setHasSeenCoffeeCarComic(true)
+      setHasSeenDriveThruComic(true)
     }
   }, [])
 
@@ -247,14 +263,24 @@ export default function BusinessCard({
       console.error("Error playing sound:", error)
     }
 
-    if (isCoffeeShopFirstPurchase && !hasSeenCoffeeShopComic) {
+    if (canShowCoffeeShopComic && !hasSeenCoffeeShopComic) {
       setShowCoffeeShopComic(true)
-    } else if (isCoffeeCarFirstPurchase && !hasSeenCoffeeCarComic) {
+    } else if (canShowCoffeeCarComic && !hasSeenCoffeeCarComic) {
       setShowCoffeeCarComic(true)
+    } else if (canShowDriveThruComic && !hasSeenDriveThruComic) {
+      setShowDriveThruComic(true)
     } else {
       onBuy()
     }
-  }, [isCoffeeShopFirstPurchase, isCoffeeCarFirstPurchase, hasSeenCoffeeShopComic, hasSeenCoffeeCarComic, onBuy])
+  }, [
+    canShowCoffeeShopComic,
+    canShowCoffeeCarComic,
+    canShowDriveThruComic,
+    hasSeenCoffeeShopComic,
+    hasSeenCoffeeCarComic,
+    hasSeenDriveThruComic,
+    onBuy,
+  ])
 
   // Handle coffee shop comic close with localStorage error handling
   const handleCoffeeShopComicClose = useCallback(() => {
@@ -274,6 +300,18 @@ export default function BusinessCard({
     setHasSeenCoffeeCarComic(true)
     try {
       localStorage.setItem("hasSeenCoffeeCarComic", "true")
+    } catch (error) {
+      console.error("Error setting localStorage:", error)
+    }
+    onBuy() // Proceed with the purchase after showing the comic
+  }, [onBuy])
+
+  // Handle drive-thru comic close with localStorage error handling
+  const handleDriveThruComicClose = useCallback(() => {
+    setShowDriveThruComic(false)
+    setHasSeenDriveThruComic(true)
+    try {
+      localStorage.setItem("hasSeenDriveThruComic", "true")
     } catch (error) {
       console.error("Error setting localStorage:", error)
     }
@@ -474,9 +512,11 @@ export default function BusinessCard({
       </motion.div>
 
       {/* Comic Modals */}
-      <ComicModal show={showCoffeeShopComic} onClose={handleCoffeeShopComicClose} imageSrc="/images/comic3.3.png" />
+      <ComicModal show={showCoffeeShopComic} onClose={handleCoffeeShopComicClose} imageSrc="/images/comic2.png" />
 
       <ComicModal show={showCoffeeCarComic} onClose={handleCoffeeCarComicClose} imageSrc="/images/comic3.png" />
+
+      <ComicModal show={showDriveThruComic} onClose={handleDriveThruComicClose} imageSrc="/images/comic3.3.png" />
     </>
   )
 }

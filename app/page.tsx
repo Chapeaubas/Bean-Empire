@@ -1982,9 +1982,10 @@ export default function Home() {
     setBusinessStates(initialBusinessStates)
     businessStatesRef.current = initialBusinessStates
 
-    // In the prestige function, add this line to clear the comic flag
+    // In the prestige function, add this line to clear all comic flags
     localStorage.removeItem("hasSeenCoffeeShopComic")
     localStorage.removeItem("hasSeenCoffeeCarComic")
+    localStorage.removeItem("hasSeenDriveThruComic")
   }
 
   // Add this function to handle mini-game rewards, after the other game functions

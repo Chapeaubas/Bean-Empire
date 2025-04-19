@@ -91,7 +91,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowManagers}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
             >
               <Users className="h-4 w-4 mr-1" />
               Managers
@@ -100,7 +100,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowUpgrades}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
             >
               <TrendingUp className="h-4 w-4 mr-1" />
               Upgrades
@@ -109,7 +109,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowPrestigeShop}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
             >
               <Sparkles className="h-4 w-4 mr-1" />
               Prestige Shop
@@ -118,7 +118,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowAchievements}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
             >
               <Award className="h-4 w-4 mr-1" />
               Achievements
@@ -127,7 +127,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowStats}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
             >
               <Settings className="h-4 w-4 mr-1" />
               Stats
@@ -136,7 +136,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowPremiumShop}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
             >
               <ShoppingBag className="h-4 w-4 mr-1" />
               Premium
@@ -145,7 +145,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowFAQ}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
             >
               <HelpCircle className="h-4 w-4 mr-1" />
               FAQ
@@ -154,7 +154,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowMiniGames}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
             >
               <Coffee className="h-4 w-4 mr-1" />
               Mini Games
@@ -167,7 +167,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowManagers}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
               title="Managers"
             >
               <Users className="h-4 w-4" />
@@ -176,7 +176,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowUpgrades}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
               title="Upgrades"
             >
               <TrendingUp className="h-4 w-4" />
@@ -185,7 +185,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowPrestigeShop}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
               title="Prestige Shop"
             >
               <Sparkles className="h-4 w-4" />
@@ -194,7 +194,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowAchievements}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
               title="Achievements"
             >
               <Award className="h-4 w-4" />
@@ -203,7 +203,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowStats}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
               title="Stats"
             >
               <Settings className="h-4 w-4" />
@@ -212,7 +212,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowPremiumShop}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
               title="Premium"
             >
               <ShoppingBag className="h-4 w-4" />
@@ -221,7 +221,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowFAQ}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
               title="FAQ"
             >
               <HelpCircle className="h-4 w-4" />
@@ -230,7 +230,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowMiniGames}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2"
+              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
               title="Mini Games"
             >
               <Coffee className="h-4 w-4" />

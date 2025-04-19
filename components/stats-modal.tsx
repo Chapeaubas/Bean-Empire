@@ -123,7 +123,7 @@ export default function StatsModal({
         {/* Tabs */}
         <div className="flex space-x-1 bg-amber-900/50 p-1 rounded-lg">
           <button
-            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium ${
+            className={`flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium ${
               activeTab === "general" ? "bg-amber-700 text-white" : "text-amber-300 hover:bg-amber-800/50"
             }`}
             onClick={() => setActiveTab("general")}
@@ -131,7 +131,7 @@ export default function StatsModal({
             General
           </button>
           <button
-            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium ${
+            className={`flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium ${
               activeTab === "businesses" ? "bg-amber-700 text-white" : "text-amber-300 hover:bg-amber-800/50"
             }`}
             onClick={() => setActiveTab("businesses")}
@@ -139,7 +139,7 @@ export default function StatsModal({
             Businesses
           </button>
           <button
-            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium ${
+            className={`flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium ${
               activeTab === "achievements" ? "bg-amber-700 text-white" : "text-amber-300 hover:bg-amber-800/50"
             }`}
             onClick={() => setActiveTab("achievements")}
@@ -147,7 +147,7 @@ export default function StatsModal({
             Achievements
           </button>
           <button
-            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium ${
+            className={`flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium ${
               activeTab === "milestones" ? "bg-amber-700 text-white" : "text-amber-300 hover:bg-amber-800/50"
             }`}
             onClick={() => setActiveTab("milestones")}

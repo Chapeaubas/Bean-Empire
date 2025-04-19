@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, Zap, DollarSign, X, Filter } from "lucide-react"
+import { TrendingUp, Zap, DollarSign, Filter } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import BaseModal from "@/components/base-modal"
 import { safeNumber } from "@/lib/error-utils"
@@ -91,14 +91,7 @@ export default function UpgradeModal(props: UpgradeModalProps) {
       if (cash < upgrade.cost) return false
     }
 
-    // Filter by search term
-    if (
-      searchTerm &&
-      !upgrade.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !upgrade.description.toLowerCase().includes(searchTerm.toLowerCase())
-    ) {
-      return false
-    }
+    // No search term filtering
 
     return true
   })
@@ -145,64 +138,44 @@ export default function UpgradeModal(props: UpgradeModalProps) {
       maxWidth="max-w-4xl"
     >
       <div className="space-y-4">
-        {/* Search and filters */}
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              placeholder="Search upgrades..."
-              className="w-full bg-amber-700/50 border border-amber-600 rounded-lg px-3 py-2 text-amber-100 placeholder-amber-400"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-amber-400 hover:text-amber-300"
-                onClick={() => setSearchTerm("")}
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
-          <div className="flex">
-            <Button
-              variant="outline"
-              size="sm"
-              className={`${filter === "all" ? "bg-amber-700 border-amber-500" : "border-amber-600 text-amber-300"}`}
-              onClick={() => setFilter("all")}
-            >
-              All
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className={`${
-                filter === "available" ? "bg-amber-700 border-amber-500" : "border-amber-600 text-amber-300"
-              }`}
-              onClick={() => setFilter("available")}
-            >
-              Available
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className={`${filter === "profit" ? "bg-amber-700 border-amber-500" : "border-amber-600 text-amber-300"}`}
-              onClick={() => setFilter("profit")}
-            >
-              <DollarSign className="h-4 w-4 mr-1" />
-              Profit
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className={`${filter === "speed" ? "bg-amber-700 border-amber-500" : "border-amber-600 text-amber-300"}`}
-              onClick={() => setFilter("speed")}
-            >
-              <Zap className="h-4 w-4 mr-1" />
-              Speed
-            </Button>
-          </div>
+        {/* Filters */}
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            className={`${filter === "all" ? "bg-amber-700 border-amber-500" : "border-amber-600 text-amber-300"}`}
+            onClick={() => setFilter("all")}
+          >
+            All
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className={`${
+              filter === "available" ? "bg-amber-700 border-amber-500" : "border-amber-600 text-amber-300"
+            }`}
+            onClick={() => setFilter("available")}
+          >
+            Available
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className={`${filter === "profit" ? "bg-amber-700 border-amber-500" : "border-amber-600 text-amber-300"}`}
+            onClick={() => setFilter("profit")}
+          >
+            <DollarSign className="h-4 w-4 mr-1" />
+            Profit
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className={`${filter === "speed" ? "bg-amber-700 border-amber-500" : "border-amber-600 text-amber-300"}`}
+            onClick={() => setFilter("speed")}
+          >
+            <Zap className="h-4 w-4 mr-1" />
+            Speed
+          </Button>
         </div>
 
         {/* Upgrades list */}

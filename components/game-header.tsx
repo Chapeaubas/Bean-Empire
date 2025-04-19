@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { logError } from "@/lib/error-utils"
 import { formatCurrency } from "@/lib/utils"
+import SoundControls from "@/components/sound-controls"
 
 interface GameHeaderProps {
   coins: number
@@ -237,7 +238,9 @@ export default function GameHeader({
             </Button>
           </div>
 
-          <div className="flex flex-wrap gap-3 text-sm">
+          <div className="flex flex-wrap gap-3 text-sm items-center">
+            <SoundControls className="mr-2" />
+
             <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
               <Star className="h-4 w-4 mr-2 text-amber-300" />
               <span>

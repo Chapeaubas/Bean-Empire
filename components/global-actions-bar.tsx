@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { formatNumber } from "@/lib/utils"
-import { Sparkles } from "lucide-react"
+import { Sparkles, Pause } from "lucide-react"
+import PauseMenu from "@/components/pause-menu"
 
 interface GlobalActionsBarProps {
   cash: number
@@ -33,6 +34,7 @@ export default function GlobalActionsBar({
   newAngels,
 }: GlobalActionsBarProps) {
   const [showPrestigeConfirm, setShowPrestigeConfirm] = useState(false)
+  const [showPauseMenu, setShowPauseMenu] = useState(false)
 
   // Ensure values are safe
   const safeCash = isNaN(cash) ? 0 : cash
@@ -80,7 +82,23 @@ export default function GlobalActionsBar({
               </div>
             </div>
           ) : (
-            <div className="flex flex-wrap items-center gap-2 w-full justify-center sm:justify-end">
+            <div className="flex flex-wrap items-center gap-2 w-full justify-center sm:justify-start">
+              <Button
+                variant="default"
+                className="bg-amber-600 hover:bg-amber-700"
+                onClick={onCollectAll}
+                disabled={safeReadyBusinesses === 0}
+              >
+                Collect All ({safeReadyBusinesses})
+              </Button>
+              <Button
+                variant="default"
+                className="bg-amber-600 hover:bg-amber-700"
+                onClick={onStartAll}
+                disabled={safeIdleBusinesses === 0}
+              >
+                Start All ({safeIdleBusinesses})
+              </Button>
               <Button
                 variant="default"
                 className={`bg-gradient-to-r ${
@@ -94,10 +112,20 @@ export default function GlobalActionsBar({
                 <Sparkles className="h-4 w-4 mr-2" />
                 Prestige ({isNaN(safePrestigeMultiplier) ? "0" : safePrestigeMultiplier}x)
               </Button>
+              <Button
+                variant="outline"
+                className="bg-amber-700 border-amber-600 text-amber-300 hover:bg-amber-800"
+                onClick={() => setShowPauseMenu(true)}
+              >
+                <Pause className="h-4 w-4 mr-2" />
+                Pause
+              </Button>
             </div>
           )}
         </div>
       </div>
+
+      {showPauseMenu && <PauseMenu onResume={() => setShowPauseMenu(false)} onClose={() => setShowPauseMenu(false)} />}
     </div>
   )
 }

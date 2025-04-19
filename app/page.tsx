@@ -41,6 +41,9 @@ import MiniGamesModal from "@/components/mini-games-modal"
 import BeanSortingGame from "@/components/bean-sorting-game"
 import CoffeeBrewingGame from "@/components/coffee-brewing-game"
 
+// Add this to the imports at the top of the file
+import soundManager from "@/lib/sound-manager"
+
 // Add this near the top of the file, after imports
 const DEBUG = true
 
@@ -48,7 +51,7 @@ const DEBUG = true
 const initialBusinesses = [
   {
     id: "coffee_cart",
-    name: "Coffee Cart",
+    name: "Coffee Farmer",
     icon: "🛒",
     baseCost: 4,
     baseRevenue: 1,
@@ -58,7 +61,7 @@ const initialBusinesses = [
   },
   {
     id: "coffee_shop",
-    name: "Coffee Shop",
+    name: "Coffee Cart",
     icon: "☕",
     baseCost: 60,
     baseRevenue: 60,
@@ -68,7 +71,7 @@ const initialBusinesses = [
   },
   {
     id: "coffee_house",
-    name: "Coffee House",
+    name: "Coffee Car",
     icon: "🏠",
     baseCost: 720,
     baseRevenue: 540,
@@ -78,7 +81,7 @@ const initialBusinesses = [
   },
   {
     id: "coffee_drive_thru",
-    name: "Drive-Thru Coffee",
+    name: "Coffee Shop",
     icon: "🚗",
     baseCost: 8640,
     baseRevenue: 4320,
@@ -88,7 +91,7 @@ const initialBusinesses = [
   },
   {
     id: "coffee_roastery",
-    name: "Coffee Roastery",
+    name: "Coffee Warehouse",
     icon: "🔥",
     baseCost: 103680,
     baseRevenue: 51840,
@@ -1981,6 +1984,7 @@ export default function Home() {
 
     // In the prestige function, add this line to clear the comic flag
     localStorage.removeItem("hasSeenCoffeeShopComic")
+    localStorage.removeItem("hasSeenCoffeeCarComic")
   }
 
   // Add this function to handle mini-game rewards, after the other game functions
@@ -2277,6 +2281,8 @@ export default function Home() {
   // Start the game
   const handleStartGame = useCallback(() => {
     setGameStarted(true)
+    // Start background music when game starts
+    soundManager.playMusic("main")
   }, [])
 
   // Add these debug functions to the Home component
@@ -2329,7 +2335,7 @@ export default function Home() {
 
     // Reset the manager system
     resetManagerSystem()
-  }, [businessStates, resetManagerSystem])
+  }, [resetManagerSystem])
 
   const clearLocalStorage = useCallback(() => {
     if (DEBUG) console.log("Clearing local storage")

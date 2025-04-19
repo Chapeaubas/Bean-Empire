@@ -109,15 +109,15 @@ export default function UpgradeModal(props: UpgradeModalProps) {
   const getBusinessName = (businessId: string) => {
     switch (businessId) {
       case "coffee_cart":
-        return "Coffee Cart"
+        return "Coffee Farmer"
       case "coffee_shop":
-        return "Coffee Shop"
+        return "Coffee Cart"
       case "coffee_house":
-        return "Coffee House"
+        return "Coffee Car"
       case "coffee_drive_thru":
-        return "Drive-Thru Coffee"
+        return "Coffee Shop"
       case "coffee_roastery":
-        return "Coffee Roastery"
+        return "Coffee Warehouse"
       case "coffee_plantation":
         return "Coffee Plantation"
       case "coffee_factory":

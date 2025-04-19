@@ -1,7 +1,8 @@
 "use client"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import PixelButton from "./pixel-button"
+import { Button } from "@/components/ui/button"
+import { X } from "lucide-react"
 
 interface ComicModalProps {
   show: boolean
@@ -10,6 +11,8 @@ interface ComicModalProps {
 }
 
 export default function ComicModal({ show, onClose, imageSrc }: ComicModalProps) {
+  if (!show) return null
+
   return (
     <AnimatePresence>
       {show && (
@@ -17,26 +20,38 @@ export default function ComicModal({ show, onClose, imageSrc }: ComicModalProps)
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="fixed inset-0 flex items-center justify-center bg-black/80 z-50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="flex flex-col items-center max-w-2xl w-full"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative max-w-2xl w-full bg-amber-100 rounded-lg overflow-hidden shadow-2xl"
           >
-            <div className="relative w-full aspect-square mb-6 bg-white rounded-lg overflow-hidden shadow-2xl">
+            <button
+              onClick={onClose}
+              className="absolute top-2 right-2 z-10 bg-amber-800/50 rounded-full p-1 text-white hover:bg-amber-800"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="relative w-full aspect-[3/4]">
               <Image
                 src={imageSrc || "/placeholder.svg"}
-                alt="$GRIND Comic"
+                alt="Comic"
                 fill
                 style={{ objectFit: "contain" }}
                 priority
-                className="rounded-lg"
+                className="rounded-t-lg"
               />
             </div>
-            <PixelButton text="Continue" color="amber" onClick={onClose} className="text-xl px-8 py-4" />
+
+            <div className="p-4 bg-amber-800 text-center">
+              <Button onClick={onClose} className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 py-3">
+                Continue
+              </Button>
+            </div>
           </motion.div>
         </motion.div>
       )}

@@ -11,6 +11,9 @@ import { safeNumber, safeCalculation, logError, ensureString, formatNumberSafe }
 import FloatingText from "@/components/floating-text"
 import ComicModal from "./comic-modal"
 
+// Add this import at the top
+import soundManager from "@/lib/sound-manager"
+
 interface BusinessCardProps {
   business: {
     id: string
@@ -72,12 +75,27 @@ export default function BusinessCard({
   const [isAnimating, setIsAnimating] = useState(false)
   const [purchaseAmount, setPurchaseAmount] = useState<"x1" | "x10" | "x100" | "all">("x1")
   const [showCoffeeShopComic, setShowCoffeeShopComic] = useState(false)
-  const [hasSeenCoffeeShopComic, setHasSeenCoffeeShopComic] = useState(() => {
+  const [showCoffeeCarComic, setShowCoffeeCarComic] = useState(false)
+  const [hasSeenCoffeeShopComic, setHasSeenCoffeeShopComic] = useState(false)
+  const [hasSeenCoffeeCarComic, setHasSeenCoffeeCarComic] = useState(false)
+
+  const [isCoffeeShopFirstPurchaseCheck, setIsCoffeeShopFirstPurchaseCheck] = useState(false)
+  const [isCoffeeCarFirstPurchaseCheck, setIsCoffeeCarFirstPurchaseCheck] = useState(false)
+
+  useEffect(() => {
     if (typeof localStorage !== "undefined") {
-      return localStorage.getItem("hasSeenCoffeeShopComic") === "true"
+      const shopComicSeen = localStorage.getItem("hasSeenCoffeeShopComic")
+      const carComicSeen = localStorage.getItem("hasSeenCoffeeCarComic")
+
+      if (shopComicSeen === "true") {
+        setHasSeenCoffeeShopComic(true)
+      }
+
+      if (carComicSeen === "true") {
+        setHasSeenCoffeeCarComic(true)
+      }
     }
-    return false
-  })
+  }, [])
 
   // Use a default value if businessState is undefined
   const state = businessState || {
@@ -92,6 +110,15 @@ export default function BusinessCard({
 
   // Check if this is the Coffee Shop and it hasn't been purchased yet
   const isCoffeeShopFirstPurchase = business.id === "coffee_shop" && state.owned === 0
+  useEffect(() => {
+    setIsCoffeeShopFirstPurchaseCheck(isCoffeeShopFirstPurchase)
+  }, [isCoffeeShopFirstPurchase])
+
+  // Check if this is the Coffee Car and it hasn't been purchased yet
+  const isCoffeeCarFirstPurchase = business.id === "coffee_house" && state.owned === 0
+  useEffect(() => {
+    setIsCoffeeCarFirstPurchaseCheck(isCoffeeCarFirstPurchase)
+  }, [isCoffeeCarFirstPurchase])
 
   // Modify the calculateCost function to include error handling
   const calculateCost = (amount = 1) => {
@@ -148,11 +175,14 @@ export default function BusinessCard({
     }
   }, [isReady, isAnimating])
 
+  // Inside the handleClick function, add this line to play a sound effect when collecting
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       if (onClick) onClick()
 
       if (isReady) {
+        // Play collect sound
+        soundManager.play("collect")
         onCollect(e)
       }
     },
@@ -179,11 +209,20 @@ export default function BusinessCard({
     onBuyMax()
   }
 
-  // Handle buy with comic check for Coffee Shop
+  // Inside the handleBuy function, add this line to play a sound effect when buying
   const handleBuy = () => {
-    if (isCoffeeShopFirstPurchase) {
+    // Play buy sound
+    soundManager.play("buy")
+
+    if (isCoffeeShopFirstPurchaseCheck) {
       if (!hasSeenCoffeeShopComic) {
         setShowCoffeeShopComic(true)
+      } else {
+        onBuy()
+      }
+    } else if (isCoffeeCarFirstPurchaseCheck) {
+      if (!hasSeenCoffeeCarComic) {
+        setShowCoffeeCarComic(true)
       } else {
         onBuy()
       }
@@ -192,11 +231,19 @@ export default function BusinessCard({
     }
   }
 
-  // Handle comic close
-  const handleComicClose = () => {
+  // Handle coffee shop comic close
+  const handleCoffeeShopComicClose = () => {
     setShowCoffeeShopComic(false)
     setHasSeenCoffeeShopComic(true)
     localStorage.setItem("hasSeenCoffeeShopComic", "true")
+    onBuy() // Proceed with the purchase after showing the comic
+  }
+
+  // Handle coffee car comic close
+  const handleCoffeeCarComicClose = () => {
+    setShowCoffeeCarComic(false)
+    setHasSeenCoffeeCarComic(true)
+    localStorage.setItem("hasSeenCoffeeCarComic", "true")
     onBuy() // Proceed with the purchase after showing the comic
   }
 
@@ -406,7 +453,10 @@ export default function BusinessCard({
       </motion.div>
 
       {/* Coffee Shop Comic Modal */}
-      <ComicModal show={showCoffeeShopComic} onClose={handleComicClose} imageSrc="/images/comic2.png" />
+      <ComicModal show={showCoffeeShopComic} onClose={handleCoffeeShopComicClose} imageSrc="/images/comic2.png" />
+
+      {/* Coffee Car Comic Modal */}
+      <ComicModal show={showCoffeeCarComic} onClose={handleCoffeeCarComicClose} imageSrc="/images/comic3.png" />
     </>
   )
 }

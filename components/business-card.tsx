@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
 import { ChevronDown, ChevronUp, Clock, Award } from "lucide-react"
@@ -10,30 +10,34 @@ import { motion } from "framer-motion"
 import { safeNumber, safeCalculation, logError, ensureString, formatNumberSafe } from "@/lib/error-utils"
 import FloatingText from "@/components/floating-text"
 import ComicModal from "./comic-modal"
-
-// Add this import at the top
 import soundManager from "@/lib/sound-manager"
 
+// Extract business state type for reuse
+interface BusinessState {
+  owned: number
+  level: number
+  hasManager: boolean
+  speedMultiplier: number
+  profitMultiplier: number
+  lastCollected: number | null
+  progress: number
+}
+
+// Extract business type for reuse
+interface Business {
+  id: string
+  name: string
+  icon: string
+  baseCost: number
+  baseRevenue: number
+  baseTime: number
+  costMultiplier: number
+  revenueMultiplier: number
+}
+
 interface BusinessCardProps {
-  business: {
-    id: string
-    name: string
-    icon: string
-    baseCost: number
-    baseRevenue: number
-    baseTime: number
-    costMultiplier: number
-    revenueMultiplier: number
-  }
-  businessState?: {
-    owned: number
-    level: number
-    hasManager: boolean
-    speedMultiplier: number
-    profitMultiplier: number
-    lastCollected: number | null
-    progress: number
-  }
+  business: Business
+  businessState?: BusinessState
   cash: number
   onBuy: () => void
   onBuy10: () => void
@@ -49,6 +53,9 @@ interface BusinessCardProps {
   }
 }
 
+// Maximum number of iterations for calculations to prevent infinite loops
+const MAX_ITERATIONS = 1000
+
 export default function BusinessCard({
   business,
   businessState,
@@ -63,10 +70,10 @@ export default function BusinessCard({
   onClick,
   managerCollection,
 }: BusinessCardProps) {
-  // Add this check at the beginning of the component
+  // Validate business data early
   if (!business) {
     console.error("Business data is undefined")
-    return null // Return null or a placeholder component
+    return null
   }
 
   // Initialize state variables with default values
@@ -78,24 +85,6 @@ export default function BusinessCard({
   const [showCoffeeCarComic, setShowCoffeeCarComic] = useState(false)
   const [hasSeenCoffeeShopComic, setHasSeenCoffeeShopComic] = useState(false)
   const [hasSeenCoffeeCarComic, setHasSeenCoffeeCarComic] = useState(false)
-
-  const [isCoffeeShopFirstPurchaseCheck, setIsCoffeeShopFirstPurchaseCheck] = useState(false)
-  const [isCoffeeCarFirstPurchaseCheck, setIsCoffeeCarFirstPurchaseCheck] = useState(false)
-
-  useEffect(() => {
-    if (typeof localStorage !== "undefined") {
-      const shopComicSeen = localStorage.getItem("hasSeenCoffeeShopComic")
-      const carComicSeen = localStorage.getItem("hasSeenCoffeeCarComic")
-
-      if (shopComicSeen === "true") {
-        setHasSeenCoffeeShopComic(true)
-      }
-
-      if (carComicSeen === "true") {
-        setHasSeenCoffeeCarComic(true)
-      }
-    }
-  }, [])
 
   // Use a default value if businessState is undefined
   const state = businessState || {
@@ -110,59 +99,86 @@ export default function BusinessCard({
 
   // Check if this is the Coffee Shop and it hasn't been purchased yet
   const isCoffeeShopFirstPurchase = business.id === "coffee_shop" && state.owned === 0
-  useEffect(() => {
-    setIsCoffeeShopFirstPurchaseCheck(isCoffeeShopFirstPurchase)
-  }, [isCoffeeShopFirstPurchase])
 
   // Check if this is the Coffee Car and it hasn't been purchased yet
   const isCoffeeCarFirstPurchase = business.id === "coffee_house" && state.owned === 0
-  useEffect(() => {
-    setIsCoffeeCarFirstPurchaseCheck(isCoffeeCarFirstPurchase)
-  }, [isCoffeeCarFirstPurchase])
 
-  // Modify the calculateCost function to include error handling
-  const calculateCost = (amount = 1) => {
+  // Load comic seen status from localStorage with error handling
+  useEffect(() => {
     try {
-      if (!business) {
-        console.error("Business data is undefined")
+      if (typeof localStorage !== "undefined") {
+        const shopComicSeen = localStorage.getItem("hasSeenCoffeeShopComic")
+        const carComicSeen = localStorage.getItem("hasSeenCoffeeCarComic")
+
+        if (shopComicSeen === "true") {
+          setHasSeenCoffeeShopComic(true)
+        }
+
+        if (carComicSeen === "true") {
+          setHasSeenCoffeeCarComic(true)
+        }
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error)
+      // Default to not showing comics if localStorage fails
+      setHasSeenCoffeeShopComic(true)
+      setHasSeenCoffeeCarComic(true)
+    }
+  }, [])
+
+  // Calculate cost with error handling and memoization
+  const calculateCost = useCallback(
+    (amount = 1) => {
+      try {
+        if (!business) {
+          return 0
+        }
+
+        let totalCost = 0
+        const baseCost = safeNumber(business.baseCost, 0)
+        const costMultiplier = safeNumber(business.costMultiplier, 1.1)
+        const ownedCount = safeNumber(state.owned, 0)
+
+        // Add safety limit to prevent infinite loops
+        for (let i = 0; i < amount && i < MAX_ITERATIONS; i++) {
+          const cost = safeCalculation(() => baseCost * Math.pow(costMultiplier, ownedCount + i), 0)
+          totalCost += cost
+        }
+        return totalCost
+      } catch (error) {
+        logError(error, `calculateCost for ${business?.id}`)
         return 0
       }
+    },
+    [business, state.owned],
+  )
 
-      let totalCost = 0
-      const baseCost = safeNumber(business.baseCost, 0)
-      const costMultiplier = safeNumber(business.costMultiplier, 1.1)
-      const ownedCount = safeNumber(state.owned, 0)
+  // Memoize cost calculations to prevent unnecessary recalculations
+  const currentCost = useMemo(() => calculateCost(1), [calculateCost])
+  const cost10 = useMemo(() => calculateCost(10), [calculateCost])
+  const cost100 = useMemo(() => calculateCost(100), [calculateCost])
 
-      for (let i = 0; i < amount; i++) {
-        const cost = safeCalculation(() => baseCost * Math.pow(costMultiplier, ownedCount + i), 0)
-        totalCost += cost
-      }
-      return totalCost
-    } catch (error) {
-      logError(error, `calculateCost for ${business?.id}`)
-      return 0
-    }
-  }
+  // Memoize other calculations
+  const baseRevenue = useMemo(() => safeNumber(business?.baseRevenue, 0), [business])
+  const ownedCount = useMemo(() => safeNumber(state.owned, 0), [state.owned])
+  const profitMultiplier = useMemo(() => safeNumber(state.profitMultiplier, 1), [state.profitMultiplier])
+  const currentRevenue = useMemo(
+    () => safeCalculation(() => baseRevenue * ownedCount * profitMultiplier, 0),
+    [baseRevenue, ownedCount, profitMultiplier],
+  )
 
-  const currentCost = calculateCost()
-  const cost10 = calculateCost(10)
-  const cost100 = calculateCost(100)
-
-  // Add error handling to other calculations
-  const baseRevenue = safeNumber(business?.baseRevenue, 0)
-  const ownedCount = safeNumber(state.owned, 0)
-  const profitMultiplier = safeNumber(state.profitMultiplier, 1)
-  const currentRevenue = safeCalculation(() => baseRevenue * ownedCount * profitMultiplier, 0)
-
-  const baseTime = safeNumber(business?.baseTime, 0)
-  const speedMultiplier = safeNumber(state.speedMultiplier, 1)
-  const cycleTime = safeCalculation(() => baseTime / speedMultiplier, 0)
+  const baseTime = useMemo(() => safeNumber(business?.baseTime, 0), [business])
+  const speedMultiplier = useMemo(() => safeNumber(state.speedMultiplier, 1), [state.speedMultiplier])
+  const cycleTime = useMemo(() => safeCalculation(() => baseTime / speedMultiplier, 0), [baseTime, speedMultiplier])
 
   // Check if business is ready to collect
-  const isReady = safeNumber(state.progress, 0) >= 100
+  const isReady = useMemo(() => safeNumber(state.progress, 0) >= 100, [state.progress])
 
   // Check if business can be started
-  const canStart = state.owned > 0 && state.progress === 0 && !state.hasManager
+  const canStart = useMemo(
+    () => state.owned > 0 && state.progress === 0 && !state.hasManager,
+    [state.owned, state.progress, state.hasManager],
+  )
 
   // Animation for collection
   useEffect(() => {
@@ -175,14 +191,18 @@ export default function BusinessCard({
     }
   }, [isReady, isAnimating])
 
-  // Inside the handleClick function, add this line to play a sound effect when collecting
+  // Handle click with sound effect
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       if (onClick) onClick()
 
       if (isReady) {
-        // Play collect sound
-        soundManager.play("collect")
+        try {
+          // Play collect sound
+          soundManager.play("collect")
+        } catch (error) {
+          console.error("Error playing sound:", error)
+        }
         onCollect(e)
       }
     },
@@ -190,65 +210,97 @@ export default function BusinessCard({
   )
 
   // Calculate how many businesses can be afforded with current cash
-  const calculateMaxAffordable = () => {
-    let count = 0
-    let totalCost = 0
-    let nextCost = currentCost
+  const calculateMaxAffordable = useCallback(() => {
+    try {
+      let count = 0
+      let totalCost = 0
+      let nextCost = currentCost
 
-    while (cash >= totalCost + nextCost) {
-      count++
-      totalCost += nextCost
-      nextCost = business.baseCost * Math.pow(business.costMultiplier, state.owned + count)
+      // Add safety limit to prevent infinite loops
+      while (cash >= totalCost + nextCost && count < MAX_ITERATIONS) {
+        count++
+        totalCost += nextCost
+        nextCost = business.baseCost * Math.pow(business.costMultiplier, state.owned + count)
+      }
+
+      return isNaN(totalCost) ? 0 : totalCost
+    } catch (error) {
+      logError(error, `calculateMaxAffordable for ${business?.id}`)
+      return 0
     }
+  }, [business, cash, currentCost, state.owned])
 
-    return isNaN(totalCost) ? 0 : totalCost
-  }
+  // Memoize max affordable calculation
+  const maxAffordableCost = useMemo(() => calculateMaxAffordable(), [calculateMaxAffordable])
 
   // Function to buy maximum affordable businesses
-  const buyMaxAffordable = () => {
+  const buyMaxAffordable = useCallback(() => {
     onBuyMax()
-  }
+  }, [onBuyMax])
 
-  // Inside the handleBuy function, add this line to play a sound effect when buying
-  const handleBuy = () => {
-    // Play buy sound
-    soundManager.play("buy")
+  // Handle buy with sound effect and comic display
+  const handleBuy = useCallback(() => {
+    try {
+      // Play buy sound
+      soundManager.play("buy")
+    } catch (error) {
+      console.error("Error playing sound:", error)
+    }
 
-    if (isCoffeeShopFirstPurchaseCheck) {
-      if (!hasSeenCoffeeShopComic) {
-        setShowCoffeeShopComic(true)
-      } else {
-        onBuy()
-      }
-    } else if (isCoffeeCarFirstPurchaseCheck) {
-      if (!hasSeenCoffeeCarComic) {
-        setShowCoffeeCarComic(true)
-      } else {
-        onBuy()
-      }
+    if (isCoffeeShopFirstPurchase && !hasSeenCoffeeShopComic) {
+      setShowCoffeeShopComic(true)
+    } else if (isCoffeeCarFirstPurchase && !hasSeenCoffeeCarComic) {
+      setShowCoffeeCarComic(true)
     } else {
       onBuy()
     }
-  }
+  }, [isCoffeeShopFirstPurchase, isCoffeeCarFirstPurchase, hasSeenCoffeeShopComic, hasSeenCoffeeCarComic, onBuy])
 
-  // Handle coffee shop comic close
-  const handleCoffeeShopComicClose = () => {
+  // Handle coffee shop comic close with localStorage error handling
+  const handleCoffeeShopComicClose = useCallback(() => {
     setShowCoffeeShopComic(false)
     setHasSeenCoffeeShopComic(true)
-    localStorage.setItem("hasSeenCoffeeShopComic", "true")
+    try {
+      localStorage.setItem("hasSeenCoffeeShopComic", "true")
+    } catch (error) {
+      console.error("Error setting localStorage:", error)
+    }
     onBuy() // Proceed with the purchase after showing the comic
-  }
+  }, [onBuy])
 
-  // Handle coffee car comic close
-  const handleCoffeeCarComicClose = () => {
+  // Handle coffee car comic close with localStorage error handling
+  const handleCoffeeCarComicClose = useCallback(() => {
     setShowCoffeeCarComic(false)
     setHasSeenCoffeeCarComic(true)
-    localStorage.setItem("hasSeenCoffeeCarComic", "true")
+    try {
+      localStorage.setItem("hasSeenCoffeeCarComic", "true")
+    } catch (error) {
+      console.error("Error setting localStorage:", error)
+    }
     onBuy() // Proceed with the purchase after showing the comic
-  }
+  }, [onBuy])
 
   // Ensure progress value is a valid number between 0-100
-  const safeProgress = safeNumber(state.progress, 0)
+  const safeProgress = useMemo(() => safeNumber(state.progress, 0), [state.progress])
+
+  // Determine if manager collection should be shown
+  const showManagerCollection = useMemo(
+    () => managerCollection && Date.now() - managerCollection.timestamp < 2000,
+    [managerCollection],
+  )
+
+  // Determine button disabled state
+  const buyButtonDisabled = useMemo(() => {
+    const costToCheck =
+      purchaseAmount === "all"
+        ? maxAffordableCost
+        : purchaseAmount === "x100"
+          ? cost100
+          : purchaseAmount === "x10"
+            ? cost10
+            : currentCost
+    return cash < costToCheck
+  }, [cash, purchaseAmount, maxAffordableCost, cost100, cost10, currentCost])
 
   return (
     <>
@@ -281,7 +333,7 @@ export default function BusinessCard({
             </div>
           </div>
 
-          {/* Update the revenue display */}
+          {/* Revenue display */}
           <div className="text-right">
             <div className="text-amber-300 font-bold">{formatCurrency(currentRevenue)}</div>
             <div className="text-xs text-amber-200 flex items-center justify-end">
@@ -316,9 +368,7 @@ export default function BusinessCard({
         )}
 
         {/* Manager Collection Animation */}
-        {managerCollection && Date.now() - managerCollection.timestamp < 2000 && (
-          <FloatingText amount={managerCollection.amount} />
-        )}
+        {showManagerCollection && <FloatingText amount={managerCollection!.amount} />}
 
         {/* Expanded Details */}
         {isExpanded && state.owned > 0 && (
@@ -346,45 +396,16 @@ export default function BusinessCard({
             <div className="flex-1">
               <motion.div
                 whileHover={{
-                  scale:
-                    cash >=
-                    (purchaseAmount === "all"
-                      ? calculateMaxAffordable()
-                      : purchaseAmount === "x100"
-                        ? cost100
-                        : purchaseAmount === "x10"
-                          ? cost10
-                          : currentCost)
-                      ? 1.05
-                      : 1,
+                  scale: !buyButtonDisabled ? 1.05 : 1,
                 }}
                 whileTap={{
-                  scale:
-                    cash >=
-                    (purchaseAmount === "all"
-                      ? calculateMaxAffordable()
-                      : purchaseAmount === "x100"
-                        ? cost100
-                        : purchaseAmount === "x10"
-                          ? cost10
-                          : currentCost)
-                      ? 0.95
-                      : 1,
+                  scale: !buyButtonDisabled ? 0.95 : 1,
                 }}
               >
                 <Button
                   variant="default"
                   className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 flex items-center justify-between"
-                  disabled={
-                    cash <
-                    (purchaseAmount === "all"
-                      ? calculateMaxAffordable()
-                      : purchaseAmount === "x100"
-                        ? cost100
-                        : purchaseAmount === "x10"
-                          ? cost10
-                          : currentCost)
-                  }
+                  disabled={buyButtonDisabled}
                   onClick={() => {
                     if (purchaseAmount === "x1") handleBuy()
                     else if (purchaseAmount === "x10") onBuy10()
@@ -396,7 +417,7 @@ export default function BusinessCard({
                   <span>
                     {formatCurrency(
                       purchaseAmount === "all"
-                        ? calculateMaxAffordable()
+                        ? maxAffordableCost
                         : purchaseAmount === "x100"
                           ? cost100
                           : purchaseAmount === "x10"
@@ -426,7 +447,7 @@ export default function BusinessCard({
             </motion.div>
           </div>
 
-          {/* Update the collect button */}
+          {/* Collect/Start button */}
           <Button
             variant="default"
             className={`w-full ${
@@ -452,10 +473,9 @@ export default function BusinessCard({
         </div>
       </motion.div>
 
-      {/* Coffee Shop Comic Modal */}
-      <ComicModal show={showCoffeeShopComic} onClose={handleCoffeeShopComicClose} imageSrc="/images/comic2.png" />
+      {/* Comic Modals */}
+      <ComicModal show={showCoffeeShopComic} onClose={handleCoffeeShopComicClose} imageSrc="/images/comic3.3.png" />
 
-      {/* Coffee Car Comic Modal */}
       <ComicModal show={showCoffeeCarComic} onClose={handleCoffeeCarComicClose} imageSrc="/images/comic3.png" />
     </>
   )

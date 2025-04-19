@@ -2281,8 +2281,15 @@ export default function Home() {
   // Start the game
   const handleStartGame = useCallback(() => {
     setGameStarted(true)
-    // Start background music when game starts
-    soundManager.playMusic("main")
+
+    // Add a small delay before playing music to ensure the audio context is ready
+    setTimeout(() => {
+      try {
+        soundManager.playMusic("main")
+      } catch (error) {
+        console.error("Error playing music:", error)
+      }
+    }, 100)
   }, [])
 
   // Add these debug functions to the Home component
@@ -2374,7 +2381,7 @@ export default function Home() {
 
     // Reset the manager system
     resetManagerSystem()
-  }, [resetManagerSystem, updateBusinessState])
+  }, [resetManagerSystem])
 
   // Wrap the entire return in an error boundary
   return (

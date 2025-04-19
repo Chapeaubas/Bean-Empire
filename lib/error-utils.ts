@@ -88,3 +88,20 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
     }
   }
 }
+
+/**
+ * Safely access localStorage with error handling
+ * @param action Function that accesses localStorage
+ * @param fallbackValue Fallback value if localStorage access fails
+ */
+export function safeLocalStorage<T>(action: () => T, fallbackValue: T): T {
+  try {
+    if (typeof localStorage !== "undefined") {
+      return action()
+    }
+    return fallbackValue
+  } catch (error) {
+    console.error("Error accessing localStorage:", error)
+    return fallbackValue
+  }
+}

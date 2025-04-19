@@ -1,40 +1,60 @@
 "use client"
 
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import PixelButton from "./pixel-button"
+import soundManager from "@/lib/sound-manager"
 
 export default function StartScreen({ onStart }: { onStart: () => void }) {
   const [showScreen, setShowScreen] = useState(true)
   const [showComic, setShowComic] = useState(false)
   const [hasSeenComic, setHasSeenComic] = useState(false)
 
-  // Check if user has seen the comic before
+  // Check if user has seen the comic before with error handling
   useEffect(() => {
-    const comicSeen = localStorage.getItem("comicSeen")
-    if (comicSeen) {
-      setHasSeenComic(true)
+    try {
+      if (typeof localStorage !== "undefined") {
+        const comicSeen = localStorage.getItem("comicSeen")
+        if (comicSeen) {
+          setHasSeenComic(true)
+        }
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error)
+      // Default to not showing the comic if localStorage fails
+      setHasSeenComic(false)
     }
   }, [])
 
-  const handleStart = () => {
+  const handleStart = useCallback(() => {
+    // Try to play any pending music when user interacts
+    try {
+      soundManager.tryPlayPendingMusic()
+    } catch (error) {
+      console.error("Error playing pending music:", error)
+    }
+
     // If they haven't seen the comic, show it first
     if (!hasSeenComic) {
       setShowComic(true)
-      localStorage.setItem("comicSeen", "true")
+      try {
+        localStorage.setItem("comicSeen", "true")
+      } catch (error) {
+        console.error("Error setting localStorage:", error)
+      }
     } else {
       // Otherwise go straight to the game
       setShowScreen(false)
       onStart()
     }
-  }
+  }, [hasSeenComic, onStart])
 
-  const handleFinishComic = () => {
+  const handleFinishComic = useCallback(() => {
     setShowComic(false)
     setShowScreen(false)
     onStart()
-  }
+  }, [onStart])
 
   return (
     <AnimatePresence>
@@ -55,12 +75,19 @@ export default function StartScreen({ onStart }: { onStart: () => void }) {
             >
               <div className="relative w-full aspect-[3/4] mb-6">
                 <Image
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Comic1-IeNJDEyXw2G3ranwwDhYaeRgKHQFnm.png"
+                  src="/images/comic1.png"
                   alt="$GRIND Comic"
                   fill
                   style={{ objectFit: "contain" }}
                   priority
                   className="rounded-lg shadow-2xl"
+                  onError={(e) => {
+                    console.error("Error loading comic image:", e)
+                    // Fallback if image fails to load
+                    const imgElement = e.currentTarget as HTMLImageElement
+                    imgElement.src = "/superhero-cityscape.png"
+                    imgElement.alt = "Comic (Failed to load)"
+                  }}
                 />
               </div>
               <PixelButton
@@ -84,6 +111,13 @@ export default function StartScreen({ onStart }: { onStart: () => void }) {
                   style={{ objectFit: "contain" }}
                   priority
                   className="pixel-art"
+                  onError={(e) => {
+                    console.error("Error loading start screen image:", e)
+                    // Fallback if image fails to load
+                    const imgElement = e.currentTarget as HTMLImageElement
+                    imgElement.src = "/fantasy-adventure-start.png"
+                    imgElement.alt = "Game Start Screen (Failed to load)"
+                  }}
                 />
               </motion.div>
               <motion.div

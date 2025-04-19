@@ -45,9 +45,18 @@ export default function SoundControls({ className = "" }: SoundControlsProps) {
     setMusicEnabled(newState)
     soundManager.setMusicEnabled(newState)
 
-    // If enabling music and no music is playing, start the main theme
-    if (newState && !soundManager.getCurrentMusic()) {
-      soundManager.playMusic("main")
+    // If enabling music, try to play any pending music
+    if (newState) {
+      try {
+        soundManager.tryPlayPendingMusic()
+      } catch (error) {
+        console.error("Error playing pending music:", error)
+      }
+
+      // If no music is playing, start the main theme
+      if (!soundManager.getCurrentMusic()) {
+        soundManager.playMusic("main")
+      }
     }
   }
 

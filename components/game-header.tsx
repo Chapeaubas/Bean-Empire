@@ -140,6 +140,8 @@ export default function GameHeader({
               size="sm"
               onClick={onShowPremiumShop}
               className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
+              title="Premium Shop (click X to close)"
+              aria-label="Open Premium Shop"
             >
               <ShoppingBag className="h-4 w-4 mr-1" />
               Premium
@@ -216,7 +218,8 @@ export default function GameHeader({
               size="sm"
               onClick={onShowPremiumShop}
               className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
-              title="Premium"
+              title="Premium Shop (tap X to close)"
+              aria-label="Open Premium Shop"
             >
               <ShoppingBag className="h-4 w-4" />
             </Button>

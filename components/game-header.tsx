@@ -243,34 +243,34 @@ export default function GameHeader({
             </Button>
           </div>
 
-          <div className="flex flex-wrap gap-3 text-sm items-center">
+          <div className="flex flex-wrap gap-3 md:gap-3 text-sm md:text-sm items-center">
             <SoundControls className="mr-2" />
 
-            <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
-              <Star className="h-4 w-4 mr-2 text-amber-300" />
-              <span>
-                Level <span className="font-bold">{level}</span>
+            <div className="bg-amber-800 rounded-lg px-2 md:px-3 py-1 flex items-center">
+              <Star className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-amber-300" />
+              <span className="whitespace-nowrap">
+                Lvl <span className="font-bold">{level}</span>
               </span>
             </div>
-            <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
-              <Sparkles className="h-4 w-4 mr-2 text-amber-300" />
-              <span>
-                $GRIND Beans <span className="font-bold">{angelInvestors}</span>
+            <div className="bg-amber-800 rounded-lg px-2 md:px-3 py-1 flex items-center">
+              <Sparkles className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-amber-300" />
+              <span className="whitespace-nowrap">
+                <span className="font-bold">{angelInvestors}</span> $GRIND
               </span>
             </div>
-            <div className="bg-purple-800 rounded-lg px-3 py-1 flex items-center">
-              <TrendingUp className="h-4 w-4 mr-2 text-purple-300" />
-              <span>
-                Multiplier <span className="font-bold">{prestigeMultiplier.toFixed(2)}x</span>
+            <div className="bg-purple-800 rounded-lg px-2 md:px-3 py-1 flex items-center">
+              <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-purple-300" />
+              <span className="whitespace-nowrap">
+                <span className="font-bold">{prestigeMultiplier.toFixed(2)}x</span>
               </span>
             </div>
-            <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
-              <Coins className="h-4 w-4 mr-2 text-amber-300" />
+            <div className="bg-amber-800 rounded-lg px-2 md:px-3 py-1 flex items-center">
+              <Coins className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-amber-300" />
               <span className="font-bold">{formatCurrency(safeCoins)}</span>
             </div>
-            <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">
-              <TrendingUp className="h-4 w-4 mr-2 text-green-400" />
-              <span className="text-green-400 font-bold">{formatPassiveIncome(passiveIncome)}</span>
+            <div className="bg-amber-800 rounded-lg px-2 md:px-3 py-1 flex items-center">
+              <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-green-400" />
+              <span className="text-green-400 font-bold text-xs md:text-sm">{formatPassiveIncome(passiveIncome)}</span>
             </div>
           </div>
         </div>

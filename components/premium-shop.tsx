@@ -135,22 +135,23 @@ export default function PremiumShop({ angelInvestors, onPurchase, ownedItems, on
         exit={{ opacity: 0, scale: 0.9 }}
         className="bg-gradient-to-b from-amber-800 to-amber-900 rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col border-4 border-amber-500"
       >
-        <div className="flex justify-between items-center p-4 border-b-2 border-amber-600">
-          <h2 className="text-2xl font-bold flex items-center">
+        <div className="flex flex-wrap justify-between items-center p-4 border-b-2 border-amber-600">
+          <h2 className="text-xl font-bold flex items-center mb-2 sm:mb-0">
             <ShoppingBag className="h-6 w-6 mr-2 text-amber-300" />
-            Premium $GRIND Shop
+            Premium Shop
           </h2>
-          <div className="flex items-center">
-            <div className="bg-amber-700 px-4 py-2 rounded-lg flex items-center mr-4">
-              <Sparkles className="h-5 w-5 mr-2 text-amber-300" />
-              <span className="font-bold">{formatNumber(angelInvestors)} $GRIND</span>
+          <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start mt-2 sm:mt-0">
+            <div className="bg-amber-700 px-3 py-1 rounded-lg flex items-center">
+              <Sparkles className="h-4 w-4 mr-1 text-amber-300" />
+              <span className="font-bold text-sm">{formatNumber(angelInvestors)} $GRIND</span>
             </div>
             <Button
               variant="ghost"
               onClick={onClose}
-              className="text-amber-200 hover:text-amber-100 hover:bg-amber-700"
+              className="text-amber-200 hover:text-amber-100 hover:bg-amber-700 ml-2"
+              aria-label="Close premium shop"
             >
-              <X className="h-5 w-5" />
+              <X className="h-6 w-6" />
             </Button>
           </div>
         </div>
@@ -274,6 +275,17 @@ export default function PremiumShop({ angelInvestors, onPurchase, ownedItems, on
               </div>
             </>
           )}
+        </div>
+        {/* Fixed close button for mobile portrait mode */}
+        <div className="sm:hidden fixed bottom-4 right-4 z-50">
+          <Button
+            variant="default"
+            onClick={onClose}
+            className="bg-amber-600 hover:bg-amber-700 shadow-lg rounded-full h-12 w-12 flex items-center justify-center"
+            aria-label="Close premium shop"
+          >
+            <X className="h-6 w-6" />
+          </Button>
         </div>
       </motion.div>
     </div>

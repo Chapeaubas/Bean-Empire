@@ -23,6 +23,7 @@ interface GameHeaderProps {
   passiveIncome: number
   angelInvestors: number
   prestigeLevel: number
+  prestigeMultiplier: number // Add this new prop
   onShowManagers: () => void
   onShowUpgrades: () => void
   onShowStats: () => void
@@ -56,6 +57,7 @@ export default function GameHeader({
   passiveIncome,
   angelInvestors,
   prestigeLevel,
+  prestigeMultiplier, // Add this new parameter
   onShowManagers,
   onShowUpgrades,
   onShowStats,
@@ -251,6 +253,12 @@ export default function GameHeader({
               <Sparkles className="h-4 w-4 mr-2 text-amber-300" />
               <span>
                 $GRIND Beans <span className="font-bold">{angelInvestors}</span>
+              </span>
+            </div>
+            <div className="bg-purple-800 rounded-lg px-3 py-1 flex items-center">
+              <TrendingUp className="h-4 w-4 mr-2 text-purple-300" />
+              <span>
+                Multiplier <span className="font-bold">{prestigeMultiplier.toFixed(2)}x</span>
               </span>
             </div>
             <div className="bg-amber-800 rounded-lg px-3 py-1 flex items-center">

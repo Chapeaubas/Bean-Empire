@@ -2486,6 +2486,7 @@ export default function Home() {
                 }
                 angelInvestors={angelInvestors}
                 prestigeLevel={prestigeLevel}
+                prestigeMultiplier={1 + angelInvestors * getAngelEffectiveness()} // Add this line to pass the prestige multiplier
                 onShowManagers={() => setShowManagerModal(true)}
                 onShowUpgrades={() => setShowUpgradeModal(true)}
                 onShowStats={() => setShowStatsModal(true)}

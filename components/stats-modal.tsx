@@ -118,10 +118,11 @@ export default function StatsModal({
       title="Statistics"
       icon={<Settings className="h-5 w-5 mr-2 text-amber-300" />}
       maxWidth="max-w-4xl"
+      maxHeight="max-h-[90vh]"
     >
       <div className="space-y-4">
         {/* Tabs */}
-        <div className="flex space-x-1 bg-amber-900/50 p-1 rounded-lg">
+        <div className="flex space-x-1 bg-amber-900/50 p-1 rounded-lg overflow-x-auto">
           <button
             className={`flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium ${
               activeTab === "general" ? "bg-amber-700 text-white" : "text-amber-300 hover:bg-amber-800/50"
@@ -450,7 +451,7 @@ export default function StatsModal({
 
         {/* Milestones */}
         {activeTab === "milestones" && (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto max-h-[60vh]">
             <div className="bg-amber-800/50 rounded-lg p-4">
               <h3 className="font-bold mb-3 flex items-center">
                 <Clock className="h-4 w-4 mr-1 text-amber-300" />

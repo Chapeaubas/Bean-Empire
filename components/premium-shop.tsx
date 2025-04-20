@@ -4,7 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { formatNumber } from "@/lib/utils"
-import { ShoppingBag, Sparkles, Lock, Info, Check } from "lucide-react"
+import { ShoppingBag, Sparkles, Lock, Info, Check, X } from "lucide-react"
 import { motion } from "framer-motion"
 
 interface PremiumItem {
@@ -145,8 +145,12 @@ export default function PremiumShop({ angelInvestors, onPurchase, ownedItems, on
               <Sparkles className="h-5 w-5 mr-2 text-amber-300" />
               <span className="font-bold">{formatNumber(angelInvestors)} $GRIND</span>
             </div>
-            <Button variant="ghost" onClick={onClose}>
-              Close
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="text-amber-200 hover:text-amber-100 hover:bg-amber-700"
+            >
+              <X className="h-5 w-5" />
             </Button>
           </div>
         </div>

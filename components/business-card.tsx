@@ -51,6 +51,10 @@ interface BusinessCardProps {
     amount: number
     timestamp: number
   }
+  angelInvestors?: number
+  prestigeLevel?: number
+  premiumItems?: Record<string, boolean | undefined>
+  getAngelEffectiveness?: () => number
 }
 
 // Maximum number of iterations for calculations to prevent infinite loops
@@ -69,6 +73,10 @@ export default function BusinessCard({
   timeRemaining,
   onClick,
   managerCollection,
+  angelInvestors = 0,
+  prestigeLevel = 1,
+  premiumItems = {},
+  getAngelEffectiveness = () => 0.05,
 }: BusinessCardProps) {
   // Validate business data early
   if (!business) {
@@ -87,6 +95,7 @@ export default function BusinessCard({
   const [hasSeenCoffeeShopComic, setHasSeenCoffeeShopComic] = useState(false)
   const [hasSeenCoffeeCarComic, setHasSeenCoffeeCarComic] = useState(false)
   const [hasSeenDriveThruComic, setHasSeenDriveThruComic] = useState(false)
+  const [comicToShow, setComicToShow] = useState<"coffee_shop" | "coffee_car" | "coffee_drive_thru" | null>(null)
 
   // Use a default value if businessState is undefined
   const state = businessState || {
@@ -100,18 +109,9 @@ export default function BusinessCard({
   }
 
   // Determine which comics to potentially show
-  const canShowCoffeeShopComic = business.id === "coffee_shop" && state.owned === 0
-  const canShowCoffeeCarComic = business.id === "coffee_house" && state.owned === 0
-  const canShowDriveThruComic = business.id === "coffee_drive_thru" && state.owned === 0
-
-  // Check if this is the Coffee Shop (business #2) and it hasn't been purchased yet
-  // const isCoffeeShopFirstPurchase = business.id === "coffee_shop" && state.owned === 0
-
-  // Check if this is the Coffee Drive-Thru (business #4) and it hasn't been purchased yet
-  // const isDriveThruFirstPurchase = business.id === "coffee_drive_thru" && state.owned === 0
-
-  // Check if this is the Coffee Car and it hasn't been purchased yet
-  // const isCoffeeCarFirstPurchase = business.id === "coffee_house" && state.owned === 0
+  const canShowCoffeeShopComic = business.id === "coffee_shop"
+  const canShowCoffeeCarComic = business.id === "coffee_house"
+  const canShowDriveThruComic = business.id === "coffee_drive_thru"
 
   // Load comic seen status from localStorage with error handling
   useEffect(() => {
@@ -119,7 +119,7 @@ export default function BusinessCard({
       if (typeof localStorage !== "undefined") {
         const shopComicSeen = localStorage.getItem("hasSeenCoffeeShopComic")
         const carComicSeen = localStorage.getItem("hasSeenCoffeeCarComic")
-        const driveThruComicSeen = localStorage.getItem("hasSeenDriveThruComic")
+        const driveThruComicSeen = localStorage.getItem("hasSeenCoffeeDriveThruComic")
 
         if (shopComicSeen === "true") {
           setHasSeenCoffeeShopComic(true)
@@ -178,10 +178,18 @@ export default function BusinessCard({
   const baseRevenue = useMemo(() => safeNumber(business?.baseRevenue, 0), [business])
   const ownedCount = useMemo(() => safeNumber(state.owned, 0), [state.owned])
   const profitMultiplier = useMemo(() => safeNumber(state.profitMultiplier, 1), [state.profitMultiplier])
-  const currentRevenue = useMemo(
-    () => safeCalculation(() => baseRevenue * ownedCount * profitMultiplier, 0),
-    [baseRevenue, ownedCount, profitMultiplier],
-  )
+
+  // Calculate current revenue with all multipliers
+  const currentRevenue = useMemo(() => {
+    const angelBonus = 1 + safeNumber(angelInvestors, 0) * getAngelEffectiveness()
+    const prestigeBonus = safeNumber(prestigeLevel, 1)
+    const goldCoinsMultiplier = premiumItems["gold_coins"] ? 2 : 1
+
+    return safeCalculation(
+      () => baseRevenue * ownedCount * profitMultiplier * angelBonus * prestigeBonus * goldCoinsMultiplier,
+      0,
+    )
+  }, [baseRevenue, ownedCount, profitMultiplier, angelInvestors, prestigeLevel, premiumItems, getAngelEffectiveness])
 
   const baseTime = useMemo(() => safeNumber(business?.baseTime, 0), [business])
   const speedMultiplier = useMemo(() => safeNumber(state.speedMultiplier, 1), [state.speedMultiplier])
@@ -263,12 +271,12 @@ export default function BusinessCard({
       console.error("Error playing sound:", error)
     }
 
-    if (canShowCoffeeShopComic && !hasSeenCoffeeShopComic) {
-      setShowCoffeeShopComic(true)
-    } else if (canShowCoffeeCarComic && !hasSeenCoffeeCarComic) {
-      setShowCoffeeCarComic(true)
-    } else if (canShowDriveThruComic && !hasSeenDriveThruComic) {
-      setShowDriveThruComic(true)
+    if (canShowCoffeeShopComic && !hasSeenCoffeeShopComic && state.owned === 0) {
+      setComicToShow("coffee_shop")
+    } else if (canShowCoffeeCarComic && !hasSeenCoffeeCarComic && state.owned === 0) {
+      setComicToShow("coffee_car")
+    } else if (canShowDriveThruComic && !hasSeenDriveThruComic && state.owned === 0) {
+      setComicToShow("coffee_drive_thru")
     } else {
       onBuy()
     }
@@ -280,6 +288,7 @@ export default function BusinessCard({
     hasSeenCoffeeCarComic,
     hasSeenDriveThruComic,
     onBuy,
+    state.owned,
   ])
 
   // Handle coffee shop comic close with localStorage error handling
@@ -311,7 +320,7 @@ export default function BusinessCard({
     setShowDriveThruComic(false)
     setHasSeenDriveThruComic(true)
     try {
-      localStorage.setItem("hasSeenDriveThruComic", "true")
+      localStorage.setItem("hasSeenCoffeeDriveThruComic", "true")
     } catch (error) {
       console.error("Error setting localStorage:", error)
     }
@@ -339,6 +348,42 @@ export default function BusinessCard({
             : currentCost
     return cash < costToCheck
   }, [cash, purchaseAmount, maxAffordableCost, cost100, cost10, currentCost])
+
+  // REMOVED: The useEffect that was automatically setting comicToShow at component mount
+  // This was causing comics to appear immediately after game start
+
+  const handleComicClose = useCallback(
+    (comicType: "coffee_shop" | "coffee_car" | "coffee_drive_thru") => {
+      if (comicType === "coffee_shop") {
+        setShowCoffeeShopComic(false)
+        setHasSeenCoffeeShopComic(true)
+        try {
+          localStorage.setItem("hasSeenCoffeeShopComic", "true")
+        } catch (error) {
+          console.error("Error setting localStorage:", error)
+        }
+      } else if (comicType === "coffee_car") {
+        setShowCoffeeCarComic(false)
+        setHasSeenCoffeeCarComic(true)
+        try {
+          localStorage.setItem("hasSeenCoffeeCarComic", "true")
+        } catch (error) {
+          console.error("Error setting localStorage:", error)
+        }
+      } else if (comicType === "coffee_drive_thru") {
+        setShowDriveThruComic(false)
+        setHasSeenDriveThruComic(true)
+        try {
+          localStorage.setItem("hasSeenCoffeeDriveThruComic", "true")
+        } catch (error) {
+          console.error("Error setting localStorage:", error)
+        }
+      }
+      setComicToShow(null)
+      onBuy()
+    },
+    [onBuy],
+  )
 
   return (
     <>
@@ -415,14 +460,78 @@ export default function BusinessCard({
               <div className="text-amber-200">Base Revenue:</div>
               <div className="text-right">{formatCurrency(baseRevenue)}</div>
 
-              <div className="text-amber-200">Revenue Multiplier:</div>
-              <div className="text-right">{formatNumberSafe(profitMultiplier, 2)}x</div>
+              <div className="text-amber-200">Owned:</div>
+              <div className="text-right">{ensureString(ownedCount)}</div>
+
+              <div className="col-span-2 mt-1 mb-1">
+                <div className="text-amber-300 font-semibold border-b border-amber-600 pb-1 mb-1">
+                  Multiplier Breakdown:
+                </div>
+                <div className="bg-amber-800/40 rounded-lg p-2">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Base Multiplier:</span>
+                    <span className="font-bold">{formatNumberSafe(profitMultiplier, 2)}x</span>
+                  </div>
+
+                  {angelInvestors > 0 && (
+                    <div className="flex justify-between text-xs mb-1">
+                      <span>$GRIND Beans Bonus:</span>
+                      <span className="font-bold text-green-300">
+                        +{formatNumberSafe(safeNumber(angelInvestors, 0) * getAngelEffectiveness(), 2)}x
+                      </span>
+                    </div>
+                  )}
+
+                  {prestigeLevel > 1 && (
+                    <div className="flex justify-between text-xs mb-1">
+                      <span>Prestige Level Bonus:</span>
+                      <span className="font-bold text-purple-300">
+                        {formatNumberSafe(safeNumber(prestigeLevel, 1), 1)}x
+                      </span>
+                    </div>
+                  )}
+
+                  {premiumItems["gold_coins"] && (
+                    <div className="flex justify-between text-xs mb-1">
+                      <span>Gold Coins Bonus:</span>
+                      <span className="font-bold text-yellow-300">2.0x</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-xs mt-2 pt-2 border-t border-amber-600">
+                    <span className="font-semibold">Total Revenue Multiplier:</span>
+                    <span className="font-bold text-amber-300">
+                      {formatNumberSafe(
+                        profitMultiplier *
+                          (1 + safeNumber(angelInvestors, 0) * getAngelEffectiveness()) *
+                          safeNumber(prestigeLevel, 1) *
+                          (premiumItems["gold_coins"] ? 2 : 1),
+                        2,
+                      )}
+                      x
+                    </span>
+                  </div>
+                </div>
+              </div>
 
               <div className="text-amber-200">Speed Multiplier:</div>
               <div className="text-right">{formatNumberSafe(speedMultiplier, 2)}x</div>
 
               <div className="text-amber-200">Cycle Time:</div>
               <div className="text-right">{formatNumberSafe(cycleTime, 1)}s</div>
+
+              <div className="col-span-2 mt-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-amber-200">Total Revenue per Cycle:</span>
+                  <span className="font-bold text-amber-300">{formatCurrency(currentRevenue)}</span>
+                </div>
+                <div className="flex justify-between text-xs mt-1">
+                  <span className="text-amber-200">Revenue per Second:</span>
+                  <span className="font-bold text-green-300">
+                    {formatCurrency(cycleTime > 0 ? currentRevenue / cycleTime : 0)}/s
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -498,7 +607,18 @@ export default function BusinessCard({
             onClick={(e) => (isReady ? onCollect(e) : canStart ? onStart() : null)}
             disabled={!isReady && !canStart}
           >
-            {isReady ? `Collect ${formatCurrency(currentRevenue)}` : canStart ? "Start Production" : "In Progress..."}
+            {isReady ? (
+              <>
+                Collect {formatCurrency(currentRevenue)}
+                {ownedCount > 0 && profitMultiplier > 1 && (
+                  <span className="text-xs ml-1">({formatNumberSafe(profitMultiplier, 1)}x)</span>
+                )}
+              </>
+            ) : canStart ? (
+              "Start Production"
+            ) : (
+              "In Progress..."
+            )}
           </Button>
 
           {/* Manager Indicator */}
@@ -512,11 +632,23 @@ export default function BusinessCard({
       </motion.div>
 
       {/* Comic Modals */}
-      <ComicModal show={showCoffeeShopComic} onClose={handleCoffeeShopComicClose} imageSrc="/images/comic2.png" />
+      <ComicModal
+        show={comicToShow === "coffee_shop"}
+        onClose={() => handleComicClose("coffee_shop")}
+        imageSrc="/images/comic2.png"
+      />
 
-      <ComicModal show={showCoffeeCarComic} onClose={handleCoffeeCarComicClose} imageSrc="/images/comic3.png" />
+      <ComicModal
+        show={comicToShow === "coffee_car"}
+        onClose={() => handleComicClose("coffee_car")}
+        imageSrc="/images/comic3.png"
+      />
 
-      <ComicModal show={showDriveThruComic} onClose={handleDriveThruComicClose} imageSrc="/images/comic3.3.png" />
+      <ComicModal
+        show={comicToShow === "coffee_drive_thru"}
+        onClose={() => handleComicClose("coffee_drive_thru")}
+        imageSrc="/images/comic3.3.png"
+      />
     </>
   )
 }

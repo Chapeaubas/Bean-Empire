@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { formatNumber } from "@/lib/utils"
-import { Sparkles, Pause } from "lucide-react"
+import { Sparkles } from "lucide-react"
 import PauseMenu from "@/components/pause-menu"
 
 interface GlobalActionsBarProps {
@@ -85,22 +85,6 @@ export default function GlobalActionsBar({
             <div className="flex flex-wrap items-center gap-2 w-full justify-center sm:justify-start">
               <Button
                 variant="default"
-                className="bg-amber-600 hover:bg-amber-700"
-                onClick={onCollectAll}
-                disabled={safeReadyBusinesses === 0}
-              >
-                Collect All ({safeReadyBusinesses})
-              </Button>
-              <Button
-                variant="default"
-                className="bg-amber-600 hover:bg-amber-700"
-                onClick={onStartAll}
-                disabled={safeIdleBusinesses === 0}
-              >
-                Start All ({safeIdleBusinesses})
-              </Button>
-              <Button
-                variant="default"
                 className={`bg-gradient-to-r ${
                   canPrestige
                     ? "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
@@ -111,14 +95,6 @@ export default function GlobalActionsBar({
               >
                 <Sparkles className="h-4 w-4 mr-2" />
                 Prestige ({isNaN(safePrestigeMultiplier) ? "0" : safePrestigeMultiplier}x)
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-amber-700 border-amber-600 text-amber-300 hover:bg-amber-800"
-                onClick={() => setShowPauseMenu(true)}
-              >
-                <Pause className="h-4 w-4 mr-2" />
-                Pause
               </Button>
             </div>
           )}

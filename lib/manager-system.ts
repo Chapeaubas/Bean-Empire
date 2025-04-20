@@ -1,7 +1,6 @@
-// Remove the import of useEffectEvent since it's not being used
-// import { useEffectEvent } from "react"
+// This is a partial update to ensure the manager system uses the correct revenue calculation
 
-// This function sets up the manager system to automatically collect from businesses
+// In the setupManagerSystem function, ensure the revenue calculation is consistent
 export function setupManagerSystem(
   managers: any[],
   getBusinessState: (businessId: string) => any,
@@ -46,8 +45,10 @@ export function setupManagerSystem(
         if (businessState.progress >= 100) {
           if (DEBUG) console.log(`Manager collecting from ${businessId}`)
 
-          // Calculate revenue
+          // Calculate revenue using the provided function
           const revenue = calculateRevenue(businessId)
+
+          if (DEBUG) console.log(`Calculated revenue for ${businessId}: ${revenue.toFixed(2)}`)
 
           // Collect revenue
           collectRevenue(businessId, revenue)

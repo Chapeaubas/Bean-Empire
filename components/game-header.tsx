@@ -110,7 +110,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowPrestigeShop}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
+              className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-purple-400 whitespace-nowrap flex items-center justify-center"
             >
               <Sparkles className="h-4 w-4 mr-1" />
               Prestige Shop
@@ -186,7 +186,7 @@ export default function GameHeader({
               variant="outline"
               size="sm"
               onClick={onShowPrestigeShop}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
+              className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-purple-400 p-2 flex items-center justify-center"
               title="Prestige Shop"
             >
               <Sparkles className="h-4 w-4" />

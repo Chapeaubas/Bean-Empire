@@ -166,6 +166,10 @@ export default function PrestigeModal({
                       <li>Each $GRIND Bean gives you a {(safeAngelEffectiveness * 100).toFixed(0)}% profit boost</li>
                       <li>Your Prestige Level will increase to {safePrestigeLevel + 1}</li>
                       <li>You'll keep your $GRIND Upgrades and Achievements</li>
+                      <li>
+                        Total profit multiplier:{" "}
+                        {(1 + (safeAngelInvestors + safeNewAngels) * safeAngelEffectiveness).toFixed(2)}x
+                      </li>
                     </ul>
                   </div>
                 </div>

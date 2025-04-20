@@ -591,11 +591,22 @@ export default function Home() {
     }
   }, [gameStarted, prestigeLevel, angelInvestors, isInitialized])
 
+  // Also update the getAngelEffectiveness function to ensure it's returning the correct value
+
+  // Find the getAngelEffectiveness function (around line 500-550)
+  // Replace it with this updated version:
+
   // Get angel effectiveness (base + upgrades)
   const getAngelEffectiveness = () => {
-    const baseEffectiveness = 0.02 // 2% per angel
-    const upgradeBonus = (prestigeUpgradeStates["prestige_angel"] || 0) * 0.01 // +1% per level
-    return baseEffectiveness + upgradeBonus
+    // Increased base effectiveness from 2% to 5% per angel
+    const baseEffectiveness = 0.05 // 5% per angel
+    // Add bonus from prestige upgrades
+    const upgradeBonus = (prestigeUpgradeStates["prestige_angel"] || 0) * 0.02 // +2% per level
+
+    const totalEffectiveness = baseEffectiveness + upgradeBonus
+    console.log("Angel effectiveness calculation:", { baseEffectiveness, upgradeBonus, totalEffectiveness })
+
+    return totalEffectiveness
   }
 
   // Get offline earnings multiplier
@@ -689,10 +700,10 @@ export default function Home() {
         baseRevenue,
         ownedCount,
         profitMultiplier,
-        angelBonus,
+        angelBonus: angelBonus.toFixed(2),
         prestigeBonus,
         goldCoinsMultiplier,
-        totalRevenue,
+        totalRevenue: totalRevenue.toFixed(2),
       })
     }
 
@@ -1421,6 +1432,10 @@ export default function Home() {
       // Calculate revenue
       const revenue = calculateRevenue(businessId)
 
+      if (DEBUG) {
+        console.log(`Collecting from ${businessId}, calculated revenue: ${revenue.toFixed(2)}`)
+      }
+
       // Update cash and stats
       setCash((prev) => prev + revenue)
       setLifetimeEarnings((prev) => prev + revenue)
@@ -1925,6 +1940,11 @@ export default function Home() {
     const newAngels = Math.floor(Math.sqrt(lifetimeEarnings / 1e10))
     const totalAngels = angelInvestors + newAngels
 
+    // Add this console log to help with debugging
+    console.log(
+      `Prestiging: ${newAngels} new $GRIND Beans, total: ${totalAngels}, effectiveness: ${getAngelEffectiveness()}, multiplier: ${1 + totalAngels * getAngelEffectiveness()}x`,
+    )
+
     // Clear all timers
     Object.keys(businessTimers.current).forEach((businessId) => {
       clearInterval(businessTimers.current[businessId])
@@ -1963,12 +1983,16 @@ export default function Home() {
     // Initialize business states again
     const initialBusinessStates: { [key: string]: any } = {}
     initialBusinesses.forEach((business) => {
+      // Calculate the angel bonus
+      const angelBonus = 1 + totalAngels * getAngelEffectiveness()
+
       initialBusinessStates[business.id] = {
         owned: business.id === "coffee_cart" ? 1 : 0,
         level: 1,
         hasManager: false,
         speedMultiplier: 1,
-        profitMultiplier: 1,
+        // Apply angel bonus to profit multiplier for new businesses
+        profitMultiplier: angelBonus,
         lastCollected: null,
         progress: 0,
       }
@@ -1981,6 +2005,16 @@ export default function Home() {
 
     setBusinessStates(initialBusinessStates)
     businessStatesRef.current = initialBusinessStates
+
+    // Log the new state for debugging
+    console.log(
+      "After prestige - Angel investors:",
+      totalAngels,
+      "Angel effectiveness:",
+      getAngelEffectiveness(),
+      "Angel bonus:",
+      1 + totalAngels * getAngelEffectiveness(),
+    )
 
     // In the prestige function, add this line to clear all comic flags
     localStorage.removeItem("hasSeenCoffeeShopComic")
@@ -2273,7 +2307,8 @@ export default function Home() {
 
   // Get the number of new $GRIND beans that would be earned on prestige
   const getNewAngels = useCallback(() => {
-    return Math.floor(Math.sqrt(lifetimeEarnings / 1e10))
+    // More generous formula - cubic root instead of square root
+    return Math.floor(Math.cbrt(lifetimeEarnings / 1e8))
   }, [lifetimeEarnings])
 
   // Check if player can prestige

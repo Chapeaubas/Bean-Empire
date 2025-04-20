@@ -143,15 +143,15 @@ export default function PrestigeUpgrades({ prestigePoints, ownedUpgrades, onPurc
         </div>
       </div>
 
-      <div className="flex space-x-2 mb-4">
+      <div className="flex flex-wrap space-x-2 mb-4">
         <Button
           variant={activeCategory === "all" ? "default" : "outline"}
           size="sm"
-          className={
+          className={`mb-2 ${
             activeCategory === "all"
               ? "bg-amber-600 hover:bg-amber-700"
               : "border-amber-600 text-amber-300 hover:bg-amber-800"
-          }
+          }`}
           onClick={() => setActiveCategory("all")}
         >
           All
@@ -159,11 +159,11 @@ export default function PrestigeUpgrades({ prestigePoints, ownedUpgrades, onPurc
         <Button
           variant={activeCategory === "production" ? "default" : "outline"}
           size="sm"
-          className={
+          className={`mb-2 ${
             activeCategory === "production"
               ? "bg-amber-600 hover:bg-amber-700"
               : "border-amber-600 text-amber-300 hover:bg-amber-800"
-          }
+          }`}
           onClick={() => setActiveCategory("production")}
         >
           Production
@@ -171,11 +171,11 @@ export default function PrestigeUpgrades({ prestigePoints, ownedUpgrades, onPurc
         <Button
           variant={activeCategory === "income" ? "default" : "outline"}
           size="sm"
-          className={
+          className={`mb-2 ${
             activeCategory === "income"
               ? "bg-amber-600 hover:bg-amber-700"
               : "border-amber-600 text-amber-300 hover:bg-amber-800"
-          }
+          }`}
           onClick={() => setActiveCategory("income")}
         >
           Income
@@ -183,11 +183,11 @@ export default function PrestigeUpgrades({ prestigePoints, ownedUpgrades, onPurc
         <Button
           variant={activeCategory === "special" ? "default" : "outline"}
           size="sm"
-          className={
+          className={`mb-2 ${
             activeCategory === "special"
               ? "bg-amber-600 hover:bg-amber-700"
               : "border-amber-600 text-amber-300 hover:bg-amber-800"
-          }
+          }`}
           onClick={() => setActiveCategory("special")}
         >
           Special

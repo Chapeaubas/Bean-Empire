@@ -211,9 +211,9 @@ export default function PrestigeUpgrades({ prestigePoints, ownedUpgrades, onPurc
                     : "bg-amber-700/50 border-amber-600"
               }`}
             >
-              <div className="flex items-start">
+              <div className="flex flex-col sm:flex-row items-start">
                 <div
-                  className={`mr-3 p-2 rounded-full ${
+                  className={`mb-3 sm:mb-0 sm:mr-3 p-2 rounded-full ${
                     isOwned
                       ? "bg-green-800"
                       : !isAvailable
@@ -226,7 +226,7 @@ export default function PrestigeUpgrades({ prestigePoints, ownedUpgrades, onPurc
                   {isAvailable ? upgrade.icon : <Lock className="h-5 w-5 text-amber-400" />}
                 </div>
 
-                <div className="flex-1">
+                <div className="flex-1 w-full">
                   <div className="flex justify-between items-start">
                     <h3 className="font-bold">{upgrade.name}</h3>
                     {isOwned ? (

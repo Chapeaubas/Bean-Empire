@@ -80,7 +80,7 @@ export default function ManagerModal({
 
         <Tabs
           defaultValue="hire"
-          className="flex-1 flex flex-col"
+          className="flex-1 flex flex-col overflow-hidden"
           onValueChange={(value) => setActiveTab(value as "hire" | "stats")}
         >
           <TabsList className="grid grid-cols-2 mx-4 mt-2">
@@ -94,7 +94,7 @@ export default function ManagerModal({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="hire" className="flex-1 overflow-auto p-4 mt-0">
+          <TabsContent value="hire" className="flex-1 overflow-y-auto p-4 mt-0">
             {/* Available managers */}
             {availableManagers.length === 0 ? (
               <div className="text-center py-8 bg-amber-800/30 rounded-lg">
@@ -150,7 +150,7 @@ export default function ManagerModal({
             </div>
           </TabsContent>
 
-          <TabsContent value="stats" className="flex-1 overflow-auto p-4 mt-0">
+          <TabsContent value="stats" className="flex-1 overflow-y-auto p-4 mt-0">
             <div className="bg-amber-800/50 rounded-lg p-4">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-bold flex items-center">

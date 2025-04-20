@@ -69,8 +69,11 @@ export default function ManagerModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-amber-800 rounded-lg max-w-2xl w-full max-h-[80vh] flex flex-col" onClick={handleModalClick}>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-4" onClick={onClose}>
+      <div
+        className="bg-amber-800 rounded-lg max-w-2xl w-full h-[90vh] sm:h-auto sm:max-h-[80vh] flex flex-col"
+        onClick={handleModalClick}
+      >
         <div className="flex justify-between items-center p-4 border-b border-amber-700">
           <h2 className="text-xl font-bold">Managers</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -83,18 +86,18 @@ export default function ManagerModal({
           className="flex-1 flex flex-col overflow-hidden"
           onValueChange={(value) => setActiveTab(value as "hire" | "stats")}
         >
-          <TabsList className="grid grid-cols-2 mx-4 mt-2">
-            <TabsTrigger value="hire" className="flex items-center">
-              <Users className="h-4 w-4 mr-2" />
+          <TabsList className="grid grid-cols-2 mx-2 sm:mx-4 mt-2">
+            <TabsTrigger value="hire" className="flex items-center text-xs sm:text-sm">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Hire Managers
             </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center">
-              <TrendingUp className="h-4 w-4 mr-2" />
+            <TabsTrigger value="stats" className="flex items-center text-xs sm:text-sm">
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Performance
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="hire" className="flex-1 overflow-y-auto p-4 mt-0">
+          <TabsContent value="hire" className="flex-1 overflow-y-auto p-2 sm:p-4 mt-0">
             {/* Available managers */}
             {availableManagers.length === 0 ? (
               <div className="text-center py-8 bg-amber-800/30 rounded-lg">
@@ -104,15 +107,19 @@ export default function ManagerModal({
             ) : (
               <div className="grid gap-4">
                 {availableManagers.map((manager) => (
-                  <div key={manager.id} className="bg-amber-700 rounded-lg p-4 flex justify-between items-center">
+                  <div
+                    key={manager.id}
+                    className="bg-amber-700 rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2"
+                  >
                     <div>
-                      <h3 className="font-bold">{manager.name}</h3>
-                      <p className="text-sm text-amber-200">{manager.description}</p>
+                      <h3 className="font-bold text-sm sm:text-base">{manager.name}</h3>
+                      <p className="text-xs sm:text-sm text-amber-200">{manager.description}</p>
                     </div>
 
                     <Button
                       variant="default"
-                      className={cash >= manager.cost ? "bg-amber-500 hover:bg-amber-600" : "bg-gray-500"}
+                      size="sm"
+                      className={`${cash >= manager.cost ? "bg-amber-500 hover:bg-amber-600" : "bg-gray-500"} mt-1 sm:mt-0`}
                       disabled={cash < manager.cost}
                       onClick={() => handleBuyManager(manager.id)}
                     >
@@ -150,7 +157,7 @@ export default function ManagerModal({
             </div>
           </TabsContent>
 
-          <TabsContent value="stats" className="flex-1 overflow-y-auto p-4 mt-0">
+          <TabsContent value="stats" className="flex-1 overflow-y-auto p-2 sm:p-4 mt-0">
             <div className="bg-amber-800/50 rounded-lg p-4">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-bold flex items-center">

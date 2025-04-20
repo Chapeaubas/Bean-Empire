@@ -33,9 +33,19 @@ const TabsTrigger = React.forwardRef<
       className,
     )}
     onClick={(e) => {
-      // Prevent default behavior and stop propagation
-      e.preventDefault()
+      // Completely stop propagation and prevent default
       e.stopPropagation()
+      e.preventDefault()
+
+      // Manually handle the tab selection
+      const value = props.value
+      const root = e.currentTarget.closest('[role="tablist"]')?.parentElement
+      if (root && value) {
+        const radixRoot = root as unknown as { setValue: (value: string) => void }
+        if (typeof radixRoot.setValue === "function") {
+          radixRoot.setValue(value)
+        }
+      }
     }}
     {...props}
   />

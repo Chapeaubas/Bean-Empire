@@ -1,30 +1,22 @@
-# Bean Empire
+$GRIND: Bean Hustle is an engaging idle coffee empire tycoon game where you build your coffee empire from a humble cart to a global brand. Buy businesses, hire managers, and strategically invest in upgrades to maximize profits. Prestige to earn $GRIND beans for permanent bonuses, and expand your empire across the globe. Enjoy a pixel-art aesthetic, mini-games, and a rich upgrade system. Can you build the ultimate coffee empire?
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+### $GRIND: Bean Hustle - Game Features
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/michaele1992-gmailcoms-projects/v0-bean-empire)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/sD8ZeEY78V2)
+In $GRIND: Bean Hustle, players can:
 
-## Overview
+- **Build a Coffee Empire**: Start with a small coffee cart and expand to shops, drive-thrus, plantations, factories, and more
+- **Expand Globally**: Travel between regions like North America and Europe, each with unique businesses
+- **Automate Production**: Hire managers to automatically run businesses and collect revenue
+- **Upgrade Businesses**: Purchase upgrades to increase profit margins and production speed
+- **Prestige System**: Reset progress to earn $GRIND beans that provide permanent bonuses
+- **Premium Shop**: Spend $GRIND beans on special items like Golden Hat and Golden Jacket for powerful effects
+- **Mini-Games**: Play coffee-themed mini-games like Bean Sorting and Coffee Brewing Challenge to earn extra cash
+- **Achievement System**: Complete challenges to unlock achievements and earn rewards
+- **Offline Progress**: Earn revenue even when not playing
+- **Manager Statistics**: Track performance of your automated businesses
+- **Daily Streaks**: Earn bonuses for playing consecutive days
+- **Seasonal Events**: Participate in special limited-time events with unique businesses and bonuses
+- **Story Comics**: Unlock comic strips that tell the story of your coffee empire as you progress
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
 
-## Deployment
-
-Your project is live at:
-
-**[https://vercel.com/michaele1992-gmailcoms-projects/v0-bean-empire](https://vercel.com/michaele1992-gmailcoms-projects/v0-bean-empire)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.dev/chat/projects/sD8ZeEY78V2](https://v0.dev/chat/projects/sD8ZeEY78V2)**
-
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+The game features a charming pixel art style, engaging progression mechanics, and multiple strategies for maximizing profits in your quest to build the ultimate coffee empire.

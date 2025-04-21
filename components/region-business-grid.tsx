@@ -79,13 +79,13 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
   if (!hasOwnedBusinesses) {
     return (
       <div className="mt-8 mb-8">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
           <h2 className="text-xl font-bold text-amber-800 border-b border-amber-300 pb-2 flex items-center">
             <Globe className="h-5 w-5 mr-2 text-amber-700" />
             {formattedRegionName} Region
           </h2>
 
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 self-end">
             {otherRegions.map((region) => {
               // Only show Europe if it's unlocked
               if (region === "europe" && !isEuropeUnlocked) return null
@@ -127,13 +127,13 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
 
   return (
     <div className="mt-8 mb-8">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
         <h2 className="text-xl font-bold text-amber-800 border-b border-amber-300 pb-2 flex items-center">
           <Globe className="h-5 w-5 mr-2 text-amber-700" />
           {formattedRegionName} Region
         </h2>
 
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 self-end">
           {otherRegions.map((region) => {
             // Only show Europe if it's unlocked
             if (region === "europe" && !isEuropeUnlocked) return null
@@ -154,7 +154,7 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {ownedBusinesses.map((business) => (
           <RegionBusinessCard
             key={business.id}

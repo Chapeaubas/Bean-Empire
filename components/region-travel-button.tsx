@@ -18,8 +18,8 @@ export default function RegionTravelButton({ region, onClick, disabled = false }
     <motion.div whileHover={{ scale: disabled ? 1 : 1.05 }} whileTap={{ scale: disabled ? 1 : 0.95 }}>
       <Button
         onClick={onClick}
-        className="bg-blue-600 hover:bg-blue-700 text-white flex items-center text-xs sm:text-sm px-2 sm:px-4 py-1 h-auto"
         disabled={disabled}
+        className={`px-2 py-1.5 h-auto text-xs bg-blue-600 hover:bg-blue-700 flex items-center gap-1`}
       >
         <motion.div
           animate={{ x: [0, 5, 0] }}

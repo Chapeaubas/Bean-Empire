@@ -61,7 +61,7 @@ export default function EmpireMapModal({
   // Check if we're on mobile
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      setIsMobile(window.innerWidth < 640)
     }
 
     checkMobile()
@@ -261,10 +261,14 @@ export default function EmpireMapModal({
 
     return (
       <div
-        className="absolute z-10 bg-white/90 border-2 border-amber-400 rounded-lg p-3 shadow-lg w-64 text-left"
+        className="absolute z-10 bg-white/90 border-2 border-amber-400 rounded-lg p-2 shadow-lg w-48 sm:w-64 text-left"
         style={{
-          top: getRegionPosition(region, isMobile).top as string,
-          left: `calc(${getRegionPosition(region, isMobile).left as string} + 30px)`,
+          top: isMobile
+            ? `calc(${getRegionPosition(region, isMobile).top as string} + 20px)`
+            : (getRegionPosition(region, isMobile).top as string),
+          left: isMobile
+            ? `calc(${getRegionPosition(region, isMobile).left as string} - 24px)`
+            : `calc(${getRegionPosition(region, isMobile).left as string} + 30px)`,
         }}
       >
         <h4 className="font-bold text-amber-900 mb-1 flex items-center">
@@ -292,7 +296,7 @@ export default function EmpireMapModal({
 
   return (
     <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-3 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-bold text-amber-900 flex items-center">
             <Globe className="h-5 w-5 sm:h-6 sm:w-6 mr-2 text-amber-700" />
@@ -331,7 +335,7 @@ export default function EmpireMapModal({
               </motion.div>
             )}
 
-            <div className="relative w-full h-[200px] sm:h-[300px] bg-blue-100 rounded-lg overflow-hidden mb-4">
+            <div className="relative w-full h-[250px] sm:h-[300px] bg-blue-100 rounded-lg overflow-hidden mb-4">
               <Image
                 src="/blue-continent-silhouette.png"
                 alt="World Map"
@@ -354,7 +358,7 @@ export default function EmpireMapModal({
                 return (
                   <div key={region} className="absolute" style={getRegionPosition(region, isMobile)}>
                     <button
-                      className={`transform -translate-x-1/2 -translate-y-1/2 p-1.5 sm:p-2 rounded-full 
+                      className={`transform -translate-x-1/2 -translate-y-1/2 p-2.5 sm:p-2 rounded-full 
                         ${isActive ? "bg-amber-500" : isUnlocked ? "bg-amber-300" : "bg-gray-400"} 
                         hover:bg-amber-400 transition-colors relative`}
                       onClick={() => handleRegionSelect(region)}
@@ -377,11 +381,11 @@ export default function EmpireMapModal({
                     </button>
 
                     {/* Region name label - hide on mobile */}
-                    <div className="absolute top-5 sm:top-6 left-0 transform -translate-x-1/2 whitespace-nowrap hidden sm:block">
+                    <div className="absolute top-6 left-0 transform -translate-x-1/2 whitespace-nowrap block">
                       <span
-                        className={`text-[10px] sm:text-xs font-bold ${isUnlocked ? "bg-white/80" : "bg-gray-200/80"} px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow`}
+                        className={`text-[8px] sm:text-xs font-bold ${isUnlocked ? "bg-white/80" : "bg-gray-200/80"} px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow`}
                       >
-                        {region}
+                        {isMobile ? region.split(" ")[0] : region}
                       </span>
                     </div>
 
@@ -428,7 +432,7 @@ export default function EmpireMapModal({
                     <>
                       {region === "North America" ? (
                         <motion.div
-                          className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 sm:p-6"
+                          className="bg-amber-50 border-2 border-amber-200 rounded-lg p-3 sm:p-6"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.5 }}
@@ -483,7 +487,7 @@ export default function EmpireMapModal({
                         </motion.div>
                       ) : region === "Europe" ? (
                         <motion.div
-                          className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 sm:p-6"
+                          className="bg-amber-50 border-2 border-amber-200 rounded-lg p-3 sm:p-6"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.5 }}
@@ -538,11 +542,11 @@ export default function EmpireMapModal({
                           </div>
                         </motion.div>
                       ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {businessesByRegion[region]?.map((business) => (
                             <motion.div
                               key={business.id}
-                              className="bg-amber-50 border border-amber-200 rounded-lg p-4"
+                              className="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-4"
                               whileHover={{ scale: 1.02 }}
                               transition={{ type: "spring", stiffness: 400, damping: 10 }}
                             >
@@ -609,21 +613,21 @@ export default function EmpireMapModal({
 }
 
 function getRegionPosition(region: string, isMobile = false): React.CSSProperties {
-  // Adjust positions for mobile
+  // Adjust positions for mobile portrait mode
   if (isMobile) {
     switch (region) {
       case "North America":
-        return { top: "30%", left: "20%" }
+        return { top: "25%", left: "30%" }
       case "South America":
-        return { top: "60%", left: "30%" }
+        return { top: "55%", left: "35%" }
       case "Europe":
-        return { top: "25%", left: "48%" }
+        return { top: "22%", left: "55%" }
       case "Africa":
-        return { top: "50%", left: "50%" }
+        return { top: "40%", left: "55%" }
       case "Asia":
-        return { top: "35%", left: "70%" }
+        return { top: "30%", left: "75%" }
       case "Australia":
-        return { top: "70%", left: "80%" }
+        return { top: "65%", left: "80%" }
       default:
         return { top: "50%", left: "50%" }
     }

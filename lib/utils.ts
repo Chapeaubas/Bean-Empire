@@ -75,6 +75,9 @@ export function formatCurrency(amount: number): string {
   return `${sign}${formatted}${suffix}`
 }
 
+// Alias for formatCurrency
+export const formatMoney = formatCurrency
+
 // Format large numbers with appropriate suffix
 export function formatNumber(num: number): string {
   if (isNaN(num) || num === undefined) return "0"

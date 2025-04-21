@@ -23,6 +23,7 @@ interface GameHeaderProps {
   onShowFAQ: () => void
   onShowPrestigeShop: () => void
   onShowMiniGames: () => void
+  onShowEmpireMap: () => void // Ensure this prop is defined
 }
 
 // Modify the formatNumber function to include error handling
@@ -58,6 +59,7 @@ export default function GameHeader({
   onShowFAQ,
   onShowPrestigeShop,
   onShowMiniGames,
+  onShowEmpireMap, // Ensure this prop is passed
 }: GameHeaderProps) {
   // Format passive income
   const formatPassiveIncome = (income: number) => {

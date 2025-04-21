@@ -38,9 +38,16 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
   const [regionBusinesses, setRegionBusinesses] = useState<any[]>([])
   const [formattedRegionName, setFormattedRegionName] = useState("")
   const [otherRegions, setOtherRegions] = useState<string[]>([])
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+
     try {
       // Format the region name for display
       setFormattedRegionName(formatRegionName(activeRegion))
@@ -62,6 +69,8 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
       setRegionBusinesses([])
       setOtherRegions([])
     }
+
+    return () => window.removeEventListener("resize", checkMobile)
   }, [activeRegion])
 
   if (!mounted) return null
@@ -78,11 +87,11 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
   // If no businesses are owned, show a message
   if (!hasOwnedBusinesses) {
     return (
-      <div className="mt-8 mb-8">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
-          <h2 className="text-xl font-bold text-amber-800 border-b border-amber-300 pb-2 flex items-center">
-            <Globe className="h-5 w-5 mr-2 text-amber-700" />
-            {formattedRegionName} Region
+      <div className="mt-4 mb-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-2">
+          <h2 className="text-base sm:text-xl font-bold text-amber-800 border-b border-amber-300 pb-1 flex items-center">
+            <Globe className="h-4 w-4 mr-1 text-amber-700" />
+            {isMobile ? formattedRegionName : `${formattedRegionName} Region`}
           </h2>
 
           <div className="flex space-x-2 self-end">
@@ -96,7 +105,6 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
                   region={region}
                   onClick={() => {
                     soundManager.play("click")
-                    console.log(`Travel button clicked for region: ${region}`) // Add this line
                     onSetActiveRegion(region)
                   }}
                   disabled={showTravelAnimation} // Pass the disabled state
@@ -112,9 +120,9 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
               soundManager.play("click")
               onShowEmpireMap()
             }}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 text-xs py-1 h-auto"
           >
-            <Globe className="h-4 w-4 mr-2" />
+            <Globe className="h-3 w-3 mr-1" />
             Empire Map
           </Button>
         </div>
@@ -126,11 +134,11 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
   const ownedBusinesses = regionBusinesses.filter((business) => regionBusinessStates[business.id]?.owned === true)
 
   return (
-    <div className="mt-8 mb-8">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
-        <h2 className="text-xl font-bold text-amber-800 border-b border-amber-300 pb-2 flex items-center">
-          <Globe className="h-5 w-5 mr-2 text-amber-700" />
-          {formattedRegionName} Region
+    <div className="mt-4 mb-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-2">
+        <h2 className="text-base sm:text-xl font-bold text-amber-800 border-b border-amber-300 pb-1 flex items-center">
+          <Globe className="h-4 w-4 mr-1 text-amber-700" />
+          {isMobile ? formattedRegionName : `${formattedRegionName} Region`}
         </h2>
 
         <div className="flex space-x-2 self-end">
@@ -144,7 +152,6 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
                 region={region}
                 onClick={() => {
                   soundManager.play("click")
-                  console.log(`Travel button clicked for region: ${region}`) // Add this line
                   onSetActiveRegion(region)
                 }}
                 disabled={showTravelAnimation} // Pass the disabled state
@@ -154,7 +161,7 @@ export default function RegionBusinessGrid(props: RegionBusinessGridProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
         {ownedBusinesses.map((business) => (
           <RegionBusinessCard
             key={business.id}

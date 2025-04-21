@@ -510,6 +510,26 @@ export default function Home() {
   // Add these state variables to the Home component, after the other state declarations
   const [showCoffeeEmpireComic, setShowCoffeeEmpireComic] = useState(false)
 
+  // Add this to the state declarations in the Home component, after the other state declarations
+  const [showEuropeComic, setShowEuropeComic] = useState(false)
+  const [hasSeenEuropeComic, setHasSeenEuropeComic] = useState(false)
+
+  // Add this effect to check if the player has seen the Europe comic
+  useEffect(() => {
+    try {
+      if (typeof localStorage !== "undefined") {
+        const europeComicSeen = localStorage.getItem("hasSeenEuropeComic")
+        if (europeComicSeen === "true") {
+          setHasSeenEuropeComic(true)
+        }
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error)
+      // Default to not showing the comic if localStorage fails
+      setHasSeenEuropeComic(true)
+    }
+  }, [])
+
   // Error handler function
   const handleError = useCallback((error: unknown, context: string) => {
     logError(error, context)
@@ -2229,10 +2249,22 @@ export default function Home() {
 
   // Fix the region change logic to prevent loops
 
-  // Modify the handleRegionChange function to prevent loops
+  // Modify the handleRegionChange function to show the Europe comic when traveling to Europe for the first time
   const handleRegionChange = (newRegion: string) => {
     // Don't do anything if we're already traveling to this region
     if (showTravelAnimation || newRegion === activeRegion) return
+
+    // Check if traveling to Europe for the first time
+    if (newRegion === "europe" && !hasSeenEuropeComic) {
+      setShowEuropeComic(true)
+      try {
+        localStorage.setItem("hasSeenEuropeComic", "true")
+        setHasSeenEuropeComic(true)
+      } catch (error) {
+        console.error("Error setting localStorage:", error)
+      }
+      return
+    }
 
     // Save current region for animation
     setTravelFromRegion(activeRegion)
@@ -2600,6 +2632,18 @@ export default function Home() {
                 show={showCoffeeEmpireComic}
                 onClose={() => setShowCoffeeEmpireComic(false)}
                 imageSrc="/images/comic7.png"
+              />
+              {/* Europe Comic Modal */}
+              <ComicModal
+                show={showEuropeComic}
+                onClose={() => {
+                  setShowEuropeComic(false)
+                  // After closing the comic, proceed with the travel
+                  setTravelFromRegion(activeRegion)
+                  setTravelToRegion("europe")
+                  setShowTravelAnimation(true)
+                }}
+                imageSrc="/images/comic8.png"
               />
             </>
           )}

@@ -1,22 +1,9 @@
 "use client"
 
-import {
-  Star,
-  Users,
-  TrendingUp,
-  Award,
-  Settings,
-  Coffee,
-  ShoppingBag,
-  HelpCircle,
-  Sparkles,
-  Coins,
-  Globe,
-} from "lucide-react"
+import { Star, Users, TrendingUp, Award, Settings, Coffee, ShoppingBag, Sparkles, Coins, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logError } from "@/lib/error-utils"
 import { formatCurrency } from "@/lib/utils"
-import SoundControls from "@/components/sound-controls"
 
 // Add activeRegion to the props
 interface GameHeaderProps {
@@ -159,6 +146,7 @@ export default function GameHeader({
               <Settings className="h-4 w-4 mr-1" />
               Stats
             </Button>
+            {/* FAQ button moved to global action bar */}
             <Button
               variant="outline"
               size="sm"
@@ -169,15 +157,6 @@ export default function GameHeader({
             >
               <ShoppingBag className="h-4 w-4 mr-1" />
               Premium
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onShowFAQ}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 whitespace-nowrap flex items-center justify-center"
-            >
-              <HelpCircle className="h-4 w-4 mr-1" />
-              FAQ
             </Button>
             <Button
               variant="outline"
@@ -237,6 +216,7 @@ export default function GameHeader({
             >
               <Settings className="h-4 w-4" />
             </Button>
+            {/* FAQ button moved to global action bar */}
             <Button
               variant="outline"
               size="sm"
@@ -250,15 +230,6 @@ export default function GameHeader({
             <Button
               variant="outline"
               size="sm"
-              onClick={onShowFAQ}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
-              title="FAQ"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
               onClick={onShowMiniGames}
               className="bg-amber-600 hover:bg-amber-700 text-white border-amber-500 p-2 flex items-center justify-center"
               title="Mini Games"
@@ -268,8 +239,6 @@ export default function GameHeader({
           </div>
 
           <div className="flex flex-wrap gap-3 md:gap-3 text-sm md:text-sm items-center">
-            <SoundControls className="mr-2" />
-
             <div className="bg-amber-800 rounded-lg px-2 md:px-3 py-1 flex items-center">
               <Star className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-amber-300" />
               <span className="whitespace-nowrap">

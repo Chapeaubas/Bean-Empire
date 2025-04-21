@@ -4,7 +4,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
 import { motion } from "framer-motion"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface ComicModalProps {
   show: boolean
@@ -14,6 +14,15 @@ interface ComicModalProps {
 
 export default function ComicModal({ show, onClose, imageSrc }: ComicModalProps) {
   const [imageError, setImageError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Reset error state when image source changes
+  useEffect(() => {
+    if (show) {
+      setImageError(false)
+      setIsLoading(true)
+    }
+  }, [imageSrc, show])
 
   if (!show) return null
 
@@ -48,18 +57,27 @@ export default function ComicModal({ show, onClose, imageSrc }: ComicModalProps)
               </div>
             </div>
           ) : (
-            <Image
-              src={imageSrc || "/placeholder.svg"}
-              alt="Comic"
-              fill
-              style={{ objectFit: "contain" }}
-              priority
-              className="rounded-t-lg"
-              onError={() => {
-                console.error(`Failed to load comic image: ${imageSrc}`)
-                setImageError(true)
-              }}
-            />
+            <>
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-amber-200">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-800"></div>
+                </div>
+              )}
+              <Image
+                src={imageSrc || "/placeholder.svg"}
+                alt="Comic"
+                fill
+                style={{ objectFit: "contain" }}
+                priority
+                className="rounded-t-lg"
+                onLoadingComplete={() => setIsLoading(false)}
+                onError={(e) => {
+                  console.error(`Failed to load comic image: ${imageSrc}`)
+                  setImageError(true)
+                  setIsLoading(false)
+                }}
+              />
+            </>
           )}
         </div>
 

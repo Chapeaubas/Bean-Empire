@@ -3,8 +3,9 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { formatNumber } from "@/lib/utils"
-import { Sparkles } from "lucide-react"
+import { Sparkles, Settings, HelpCircle } from "lucide-react"
 import PauseMenu from "@/components/pause-menu"
+import FAQModal from "@/components/faq-modal" // Import the FAQ modal component
 
 interface GlobalActionsBarProps {
   cash: number
@@ -18,6 +19,8 @@ interface GlobalActionsBarProps {
   canPrestige: boolean
   lifetimeEarnings: number
   newAngels: number
+  onShowSettings?: () => void
+  onShowFAQ?: () => void
 }
 
 export default function GlobalActionsBar({
@@ -32,9 +35,12 @@ export default function GlobalActionsBar({
   canPrestige,
   lifetimeEarnings,
   newAngels,
+  onShowSettings,
+  onShowFAQ,
 }: GlobalActionsBarProps) {
   const [showPrestigeConfirm, setShowPrestigeConfirm] = useState(false)
   const [showPauseMenu, setShowPauseMenu] = useState(false)
+  const [showLocalFAQ, setShowLocalFAQ] = useState(false) // Local state for FAQ modal
 
   // Ensure values are safe
   const safeCash = isNaN(cash) ? 0 : cash
@@ -96,12 +102,45 @@ export default function GlobalActionsBar({
                 <Sparkles className="h-4 w-4 mr-2" />
                 Prestige ({isNaN(safePrestigeMultiplier) ? "0" : safePrestigeMultiplier}x)
               </Button>
+
+              <Button
+                variant="default"
+                className="bg-amber-600 hover:bg-amber-700 flex-1 sm:flex-none"
+                onClick={onShowSettings}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
             </div>
           )}
         </div>
+
+        {/* Add a dedicated FAQ button that's always visible */}
+        <div className="flex items-center">
+          <Button
+            variant="default"
+            className="bg-amber-600 hover:bg-amber-700"
+            onClick={() => {
+              if (onShowFAQ) {
+                onShowFAQ()
+              } else {
+                // Use our local FAQ modal if no callback is provided
+                setShowLocalFAQ(true)
+                console.log("Using local FAQ modal as onShowFAQ function was not provided")
+              }
+            }}
+          >
+            <HelpCircle className="h-4 w-4 mr-2" />
+            FAQ
+          </Button>
+        </div>
       </div>
 
+      {/* Render modals */}
       {showPauseMenu && <PauseMenu onResume={() => setShowPauseMenu(false)} onClose={() => setShowPauseMenu(false)} />}
+
+      {/* Render local FAQ modal if needed */}
+      <FAQModal show={showLocalFAQ} onClose={() => setShowLocalFAQ(false)} />
     </div>
   )
 }

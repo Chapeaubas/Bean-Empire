@@ -1,11 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import BusinessCard from "@/components/business-card"
 import { Button } from "@/components/ui/button"
-import { Grid, List } from "lucide-react"
+import { Grid, List, Coffee, Globe } from "lucide-react"
 import { safeNumber } from "@/lib/error-utils"
+import { formatRegionName } from "@/lib/region-businesses"
+import { getBusinessesForRegionMapping } from "@/lib/region-business-mappings"
 
 interface BusinessGridProps {
   businesses: Array<{
@@ -31,6 +33,7 @@ interface BusinessGridProps {
   managerCollections?: {
     [key: string]: { amount: number; timestamp: number }
   }
+  activeRegion: string // Add activeRegion prop
 }
 
 export default function BusinessGrid({
@@ -46,11 +49,33 @@ export default function BusinessGrid({
   getTimeRemaining,
   onClick,
   managerCollections = {},
+  activeRegion = "north_america", // Default to North America
 }: BusinessGridProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [filter, setFilter] = useState<"all" | "owned" | "ready">("all")
 
-  const filteredBusinesses = businesses.filter((business) => {
+  // Get region-specific businesses
+  const regionBusinesses = useMemo(() => {
+    return getBusinessesForRegionMapping(activeRegion)
+  }, [activeRegion])
+
+  // Map the original business IDs to the region-specific businesses
+  const mappedBusinesses = useMemo(() => {
+    return businesses.map((business, index) => {
+      // If we have a region-specific business for this index, use it
+      if (index < regionBusinesses.length) {
+        return {
+          ...business,
+          name: regionBusinesses[index].name,
+          icon: regionBusinesses[index].icon,
+          // Keep the original ID for state tracking
+        }
+      }
+      return business
+    })
+  }, [businesses, regionBusinesses])
+
+  const filteredBusinesses = mappedBusinesses.filter((business) => {
     const state = businessStates[business.id]
 
     if (!state) return filter === "all"
@@ -66,10 +91,21 @@ export default function BusinessGrid({
     return true
   })
 
+  // Format the region name for display
+  const regionTitle =
+    activeRegion === "north_america" ? "Your Coffee Empire" : `${formatRegionName(activeRegion)} Empire`
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div className="text-xl font-bold">Your Coffee Empire</div>
+        <div className="text-xl font-bold flex items-center">
+          {activeRegion === "north_america" ? (
+            <Coffee className="h-5 w-5 mr-2 text-amber-700" />
+          ) : (
+            <Globe className="h-5 w-5 mr-2 text-amber-700" />
+          )}
+          {regionTitle}
+        </div>
 
         <div className="flex space-x-2">
           <div className="bg-amber-800 rounded-lg p-1 flex">

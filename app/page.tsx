@@ -44,6 +44,21 @@ import CoffeeBrewingGame from "@/components/coffee-brewing-game"
 // Add this to the imports at the top of the file
 import soundManager from "@/lib/sound-manager"
 
+// Add this to the imports at the top of the file
+import { getRegionBusinessById } from "@/lib/region-businesses"
+
+// Add this to the imports
+import RegionBusinessGrid from "@/components/region-business-grid"
+
+// Add the import for the region business mappings
+import { getBusinessesForRegionMapping } from "@/lib/region-business-mappings"
+
+// Add the import for the empire map modal
+import EmpireMapModal from "@/components/empire-map-modal"
+
+// Add the import for the region travel animation
+import RegionTravelAnimation from "@/components/region-travel-animation"
+
 // Add this near the top of the file, after imports
 const DEBUG = true
 
@@ -471,6 +486,18 @@ export default function Home() {
   const [showMiniGamesModal, setShowMiniGamesModal] = useState(false)
   const [activeMiniGame, setActiveMiniGame] = useState<string | null>(null)
 
+  // Add this to the state declarations in the Home component with the other modal states
+  const [showEmpireMap, setShowEmpireMap] = useState(false)
+
+  // Add these state variables to the Home component
+  const [activeRegion, setActiveRegion] = useState("north_america")
+  const [regionBusinessStates, setRegionBusinessStates] = useState<{ [key: string]: any }>({})
+
+  // Add these state variables to the Home component
+  const [showTravelAnimation, setShowTravelAnimation] = useState(false)
+  const [travelFromRegion, setTravelFromRegion] = useState("")
+  const [travelToRegion, setTravelToRegion] = useState("")
+
   // Error handler function
   const handleError = useCallback((error: unknown, context: string) => {
     logError(error, context)
@@ -488,6 +515,7 @@ export default function Home() {
   const premiumItemsRef = useRef(premiumItems)
   const managersRef = useRef(managers)
   const managerStatsRef = useRef(managerStats)
+  const regionBusinessStatesRef = useRef(regionBusinessStates)
 
   // Update refs when state changes
   useEffect(() => {
@@ -525,6 +553,10 @@ export default function Home() {
   useEffect(() => {
     managerStatsRef.current = managerStats
   }, [managerStats])
+
+  useEffect(() => {
+    regionBusinessStatesRef.current = regionBusinessStates
+  }, [regionBusinessStates])
 
   // Initialize business states
   const [isInitialized, setIsInitialized] = useState(false)
@@ -590,11 +622,6 @@ export default function Home() {
       }
     }
   }, [gameStarted, prestigeLevel, angelInvestors, isInitialized])
-
-  // Also update the getAngelEffectiveness function to ensure it's returning the correct value
-
-  // Find the getAngelEffectiveness function (around line 500-550)
-  // Replace it with this updated version:
 
   // Get angel effectiveness (base + upgrades)
   const getAngelEffectiveness = () => {
@@ -711,10 +738,51 @@ export default function Home() {
     return isNaN(totalRevenue) ? 1 : Math.max(1, totalRevenue)
   }, [])
 
-  // Update the startBusiness function to ensure it works properly with the manager system
+  // Calculate revenue for a region business
+  const calculateRegionBusinessRevenue = useCallback((businessId: string) => {
+    const business = getRegionBusinessById(businessId)
+    const state = regionBusinessStatesRef.current[businessId]
+
+    if (DEBUG) console.log("🧮 Region Revenue check:", { businessId, state, business })
+
+    if (!business || !state || !state.owned) {
+      if (DEBUG) console.log("❌ Cannot calculate region revenue: missing state or business data")
+      return 0
+    }
+
+    const baseRevenue = safeNumber(business.baseRevenue, 0)
+    const profitMultiplier = safeNumber(state.profitMultiplier, 1)
+    const angelBonus = 1 + safeNumber(angelInvestorsRef.current, 0) * getAngelEffectiveness()
+    const prestigeBonus = safeNumber(prestigeLevelRef.current, 1)
+
+    // Apply gold coins effect (2x money earned)
+    const goldCoinsMultiplier = premiumItemsRef.current["gold_coins"] ? 2 : 1
+
+    // Calculate the total revenue
+    const totalRevenue = safeCalculation(
+      () => baseRevenue * profitMultiplier * angelBonus * prestigeBonus * goldCoinsMultiplier,
+      0,
+    )
+
+    if (DEBUG) {
+      console.log("💰 Region Revenue calculation details:", {
+        businessId,
+        businessName: business.name,
+        baseRevenue,
+        profitMultiplier,
+        angelBonus: angelBonus.toFixed(2),
+        prestigeBonus,
+        goldCoinsMultiplier,
+        totalRevenue: totalRevenue.toFixed(2),
+      })
+    }
+
+    // Ensure we return a valid number
+    return isNaN(totalRevenue) ? 1 : Math.max(1, totalRevenue)
+  }, [])
 
   // Start a business production cycle
-  const _startBusiness = (businessId: string) => {
+  const startBusiness = (businessId: string) => {
     const business = initialBusinesses.find((b) => b.id === businessId)
     const state = businessStates[businessId]
 
@@ -810,534 +878,20 @@ export default function Home() {
     }, 100) // update every 100ms
   }
 
-  // Collect revenue from a business
-  const _collectBusiness = (businessId: string, e: React.MouseEvent) => {
-    try {
-      const business = initialBusinesses.find((b) => b.id === businessId)
-      const state = businessStates[businessId]
-
-      if (!business || !state || state.owned === 0 || state.progress < 100) return
-
-      // Calculate revenue
-      const revenue = calculateRevenue(businessId)
-
-      // Update cash and stats
-      setCash((prev) => prev + revenue)
-      setLifetimeEarnings((prev) => prev + revenue)
-      setStats((prev) => ({
-        ...prev,
-        totalEarnings: safeNumber(prev.totalEarnings, 0) + revenue,
-        totalCustomersServed: safeNumber(prev.totalCustomersServed, 0) + safeNumber(state.owned, 0),
-      }))
-
-      // Reset progress
-      setBusinessStates((prev) => ({
-        ...prev,
-        [businessId]: {
-          ...prev[businessId],
-          progress: 0,
-          lastCollected: null,
-        },
-      }))
-
-      // Check for achievements
-      checkAchievements()
-    } catch (error) {
-      logError(error, `collectBusiness for ${businessId}`)
-      // Provide fallback behavior or show error message to user
-    }
-  }
-
-  // Buy a business
-  const _buyBusiness = (businessId: string) => {
-    const business = initialBusinesses.find((b) => b.id === businessId)
-    const state = businessStates[businessId]
-
-    if (!business) return
-
-    // Calculate cost
-    const baseCost = business.baseCost
-    const costMultiplier = business.costMultiplier
-    const ownedCount = state?.owned || 0
-    const cost = baseCost * Math.pow(costMultiplier, ownedCount)
-
-    // Ensure cost is a valid number
-    const safeCost = isNaN(cost) ? 0 : cost
-
-    // Check if player has enough cash
-    if (cash < safeCost) return
-
-    // Update cash and business state
-    setCash((prev) => prev - safeCost)
-    setBusinessStates((prev) => {
-      const newState = {
-        ...prev,
-        [businessId]: {
-          ...prev[businessId],
-          owned: (prev[businessId]?.owned || 0) + 1,
-          level: Math.max(prev[businessId]?.level || 1, 1),
-        },
-      }
-
-      // Apply premium item effects
-      newState[businessId] = applyPremiumItemEffects(newState[businessId])
-
-      return newState
-    })
-
-    // Update stats
-    setStats((prev) => ({
-      ...prev,
-      maxBusinessOwned: Math.max(prev.maxBusinessOwned, (businessStates[businessId]?.owned || 0) + 1),
-    }))
-
-    // Check for achievements
-    checkAchievements()
-  }
-
-  // Buy 10 businesses
-  const _buy10Businesses = (businessId: string) => {
-    const business = initialBusinesses.find((b) => b.id === businessId)
-    const state = businessStates[businessId]
-
-    if (!business) return
-
-    // Calculate total cost for 10 businesses
-    const baseCost = business.baseCost
-    const costMultiplier = business.costMultiplier
-    const ownedCount = state?.owned || 0
-    let totalCost = 0
-
-    for (let i = 0; i < 10; i++) {
-      totalCost += baseCost * Math.pow(costMultiplier, ownedCount + i)
-    }
-
-    // Ensure totalCost is a valid number
-    const safeTotalCost = isNaN(totalCost) ? 0 : totalCost
-
-    // Check if player has enough cash
-    if (cash < safeTotalCost) return
-
-    // Update cash and business state
-    setCash((prev) => prev - safeTotalCost)
-    setBusinessStates((prev) => {
-      const newState = {
-        ...prev,
-        [businessId]: {
-          ...prev[businessId],
-          owned: (prev[businessId]?.owned || 0) + 10,
-          level: Math.max(prev[businessId]?.level || 1, 1),
-        },
-      }
-
-      // Apply premium item effects
-      newState[businessId] = applyPremiumItemEffects(newState[businessId])
-
-      return newState
-    })
-
-    // Update stats
-    setStats((prev) => ({
-      ...prev,
-      maxBusinessOwned: Math.max(prev.maxBusinessOwned, (businessStates[businessId]?.owned || 0) + 10),
-    }))
-
-    // Check for achievements
-    checkAchievements()
-  }
-
-  // Buy 100 businesses
-  const _buy100Businesses = (businessId: string) => {
-    const business = initialBusinesses.find((b) => b.id === businessId)
-    const state = businessStates[businessId]
-
-    if (!business) return
-
-    // Calculate total cost for 100 businesses
-    const baseCost = business.baseCost
-    const costMultiplier = business.costMultiplier
-    const ownedCount = state?.owned || 0
-    let totalCost = 0
-
-    for (let i = 0; i < 100; i++) {
-      totalCost += baseCost * Math.pow(costMultiplier, ownedCount + i)
-    }
-
-    // Ensure totalCost is a valid number
-    const safeTotalCost = isNaN(totalCost) ? 0 : totalCost
-
-    // Check if player has enough cash
-    if (cash < safeTotalCost) return
-
-    // Update cash and business state
-    setCash((prev) => prev - safeTotalCost)
-    setBusinessStates((prev) => {
-      const newState = {
-        ...prev,
-        [businessId]: {
-          ...prev[businessId],
-          owned: (prev[businessId]?.owned || 0) + 100,
-          level: Math.max(prev[businessId]?.level || 1, 1),
-        },
-      }
-
-      // Apply premium item effects
-      newState[businessId] = applyPremiumItemEffects(newState[businessId])
-
-      return newState
-    })
-
-    // Update stats
-    setStats((prev) => ({
-      ...prev,
-      maxBusinessOwned: Math.max(prev.maxBusinessOwned, (businessStates[businessId]?.owned || 0) + 100),
-    }))
-
-    // Check for achievements
-    checkAchievements()
-  }
-
-  // Buy max businesses
-  const _buyMaxBusinesses = (businessId: string) => {
-    const business = initialBusinesses.find((b) => b.id === businessId)
-    const state = businessStates[businessId]
-
-    if (!business) return
-
-    // Calculate how many businesses can be bought
-    const baseCost = business.baseCost
-    const costMultiplier = business.costMultiplier
-    const ownedCount = state?.owned || 0
-    let totalCost = 0
-    let canBuy = 0
-
-    for (let i = 0; i < 1000; i++) {
-      // Limit to 1000 to prevent infinite loops
-      const nextCost = baseCost * Math.pow(costMultiplier, ownedCount + i)
-      if (isNaN(nextCost) || totalCost + nextCost > cash) break
-      totalCost += nextCost
-      canBuy++
-    }
-
-    if (canBuy === 0) return
-
-    // Update cash and business state
-    setCash((prev) => prev - totalCost)
-    setBusinessStates((prev) => {
-      const newState = {
-        ...prev,
-        [businessId]: {
-          ...prev[businessId],
-          owned: (prev[businessId]?.owned || 0) + canBuy,
-          level: Math.max(prev[businessId]?.level || 1, 1),
-        },
-      }
-
-      // Apply premium item effects
-      newState[businessId] = applyPremiumItemEffects(newState[businessId])
-
-      return newState
-    })
-
-    // Update stats
-    setStats((prev) => ({
-      ...prev,
-      maxBusinessOwned: Math.max(prev.maxBusinessOwned, (businessStates[businessId]?.owned || 0) + canBuy),
-    }))
-
-    // Check for achievements
-    checkAchievements()
-  }
-
-  // Process manager collection
-  const processManagerCollection = (businessId: string, amount: number) => {
-    if (DEBUG) {
-      console.log(`Manager collecting ${amount} from ${businessId}`)
-      console.log(`Current cash: ${cashRef.current}`)
-    }
-
-    // Ensure amount is a valid number and greater than 0
-    const safeAmount = isNaN(amount) || amount <= 0 ? 1 : amount
-
-    // Update cash and stats
-    setCash((prev) => {
-      const newCash = prev + safeAmount
-      if (DEBUG) console.log(`New cash after collection: ${newCash}`)
-      return newCash
-    })
-
-    setLifetimeEarnings((prev) => prev + safeAmount)
-    setStats((prev) => ({
-      ...prev,
-      totalEarnings: prev.totalEarnings + safeAmount,
-      totalCustomersServed: prev.totalCustomersServed + (businessStates[businessId]?.owned || 0),
-    }))
-
-    // Find the manager for this business
-    const manager = initialManagers.find((m) => m.businessId === businessId)
-    if (manager) {
-      // Update manager statistics
-      setManagerStats((prev) => {
-        const now = Date.now()
-        const managerId = manager.id
-        const business = initialBusinesses.find((b) => b.id === businessId)
-        const currentStats = prev[managerId] || {
-          totalEarnings: 0,
-          collections: 0,
-          lastCollection: 0,
-          businessName: business?.name || "Unknown",
-          managerName: manager.name,
-        }
-
-        return {
-          ...prev,
-          [managerId]: {
-            ...currentStats,
-            totalEarnings: currentStats.totalEarnings + safeAmount,
-            collections: currentStats.collections + 1,
-            lastCollection: now,
-          },
-        }
-      })
-    }
-
-    // Add visual feedback for manager collection
-    setManagerCollections((prev) => ({
-      ...prev,
-      [businessId]: {
-        amount: safeAmount,
-        timestamp: Date.now(),
-      },
-    }))
-
-    // Check for achievements
-    checkAchievements()
-  }
-
-  // Update business state
-  const updateBusinessState = (businessId: string, updates: any) => {
-    if (DEBUG) console.log(`Updating business state for ${businessId}:`, updates)
-
-    // Immediately update the ref for faster access by other functions
-    if (businessStatesRef.current[businessId]) {
-      businessStatesRef.current = {
-        ...businessStatesRef.current,
-        [businessId]: {
-          ...businessStatesRef.current[businessId],
-          ...updates,
-        },
-      }
-    }
-
-    // Then update the state to trigger a re-render
-    setBusinessStates((prev) => {
-      if (!prev[businessId]) return prev // Skip if business doesn't exist
-
-      return {
-        ...prev,
-        [businessId]: {
-          ...prev[businessId],
-          ...updates,
-        },
-      }
-    })
-  }
-
-  // Buy a manager
-  const _buyManager = (managerId: string) => {
-    if (DEBUG) console.log("Buying manager:", managerId)
-    const manager = initialManagers.find((m) => m.id === managerId)
-
-    if (!manager) {
-      console.error("Manager not found:", managerId)
-      return
-    }
-
-    // Apply gold sunglasses effect (50% cheaper managers)
-    const managerCost = getManagerCost(manager.cost)
-
-    // Check if player has enough cash
-    if (cash < managerCost) {
-      if (DEBUG) console.log("Not enough cash to buy manager")
-      return
-    }
-
-    // Update cash
-    setCash((prev) => prev - managerCost)
-
-    // Update managers state - IMPORTANT: Do this first
-    const newManagers = {
-      ...managersRef.current,
-      [managerId]: true,
-    }
-
-    // Update the ref immediately
-    managersRef.current = newManagers
-
-    // Then update the state
-    setManagers(newManagers)
-
-    // Update business state to have a manager
-    const newBusinessStates = {
-      ...businessStatesRef.current,
-      [manager.businessId]: {
-        ...businessStatesRef.current[manager.businessId],
-        hasManager: true,
-      },
-    }
-
-    // Update the ref immediately
-    businessStatesRef.current = newBusinessStates
-
-    // Then update the state
-    setBusinessStates(newBusinessStates)
-
-    // Start the business if it's idle
-    const state = businessStatesRef.current[manager.businessId]
-    if (state && state.owned > 0 && state.progress === 0) {
-      if (DEBUG) console.log(`Starting idle business ${manager.businessId} after hiring manager`)
-      _startBusiness(manager.businessId)
-    }
-
-    // Always recreate the manager system when a new manager is hired
-    if (DEBUG) console.log("Recreating manager system after hiring new manager")
-    if (managerSystemTimer.current) {
-      clearInterval(managerSystemTimer.current)
-      managerSystemTimer.current = null
-    }
-
-    // Use a small timeout to ensure state updates have propagated
-    setTimeout(() => {
-      initializeManagerSystem()
-    }, 100)
-  }
-
-  // Setup the manager system timer - completely rewritten
-  const setupManagerSystemTimer = () => {
-    if (DEBUG) console.log("Setting up manager system timer")
-
-    // Clear any existing timer
-    if (managerSystemTimer.current) {
-      if (typeof managerSystemTimer.current === "function") {
-        managerSystemTimer.current()
-      } else {
-        clearInterval(managerSystemTimer.current)
-      }
-      managerSystemTimer.current = null
-    }
-
-    // Get all hired managers
-    const hiredManagers = initialManagers.filter((manager) => {
-      const isHired = managersRef.current[manager.id]
-      if (DEBUG) console.log(`Manager ${manager.name} for ${manager.businessId}: hired=${isHired}`)
-      return isHired
-    })
-
-    if (hiredManagers.length === 0) {
-      if (DEBUG) console.log("No managers hired, not setting up manager system")
-      return
-    }
-
-    if (DEBUG) {
-      console.log(`Setting up manager system with ${hiredManagers.length} managers:`)
-      hiredManagers.forEach((m) => {
-        console.log(`- ${m.name} (${m.businessId})`)
-
-        // Verify the business state
-        const state = businessStatesRef.current[m.businessId]
-        console.log(
-          `  Business state: owned=${state?.owned}, hasManager=${state?.hasManager}, progress=${state?.progress?.toFixed(1)}%`,
-        )
-      })
-    }
-
-    // Setup the manager system with the current list of hired managers
-    const cleanupFunction = setupManagerSystem(
-      hiredManagers,
-      // Get business state - use a direct function to avoid closure issues
-      (businessId) => {
-        return businessStatesRef.current[businessId]
-      },
-      // Get business data
-      (businessId) => initialBusinesses.find((b) => b.id === businessId),
-      // Calculate revenue
-      calculateRevenue,
-      // Update business state - use a direct function to avoid closure issues
-      (businessId, updates) => {
-        // Update the ref immediately
-        if (businessStatesRef.current[businessId]) {
-          businessStatesRef.current = {
-            ...businessStatesRef.current,
-            [businessId]: {
-              ...businessStatesRef.current[businessId],
-              ...updates,
-            },
-          }
-        }
-
-        // Then update the state
-        setBusinessStates((prev) => {
-          if (!prev[businessId]) return prev
-
-          return {
-            ...prev,
-            [businessId]: {
-              ...prev[businessId],
-              ...updates,
-            },
-          }
-        })
-      },
-      // Collect revenue
-      processManagerCollection,
-      // Handle manager collection
-      (collection) => {
-        if (DEBUG) console.log(`Manager collection notification:`, collection)
-        setManagerCollections((prev) => ({
-          ...prev,
-          [collection.businessId]: {
-            amount: collection.amount,
-            timestamp: Date.now(),
-          },
-        }))
-      },
-      // Start business - use the direct function to avoid closure issues
-      startBusiness,
-    )
-
-    // Store the cleanup function
-    managerSystemTimer.current = cleanupFunction
-
-    if (DEBUG) console.log("Manager system set up successfully")
-  }
-
-  // Make sure to use this function in both places where the manager system is set up
-  // Remove this line since we already have a full function declaration for setupManagerSystemTimerFn later in the code.
-
-  // Start a business production cycle - fixed to work better with managers
-  const startBusiness = (businessId: string) => {
-    const business = initialBusinesses.find((b) => b.id === businessId)
-    const state = businessStatesRef.current[businessId]
+  // Start a region business production cycle
+  const startRegionBusiness = (businessId: string) => {
+    const business = getRegionBusinessById(businessId)
+    const state = regionBusinessStates[businessId]
 
     // Validate
-    if (!business || !state || state.owned === 0) {
-      if (DEBUG) console.log(`Cannot start business ${businessId}: invalid state`)
-      return
-    }
+    if (!business || !state || !state.owned) return
 
-    if (DEBUG) console.log(`Starting business ${businessId}, current progress: ${state.progress}%`)
+    if (DEBUG) console.log(`Starting region business ${businessId}, current progress: ${state.progress}%`)
 
     // If progress is already started and not complete, don't restart
     if (state.progress > 0 && state.progress < 100) {
-      if (DEBUG) console.log(`Business ${businessId} already in progress (${state.progress}%), not restarting`)
+      if (DEBUG) console.log(`Region business ${businessId} already in progress (${state.progress}%), not restarting`)
       return
-    }
-
-    // Avoid starting again if a timer is already running for this business
-    if (businessTimers.current[businessId]) {
-      if (DEBUG) console.log(`Clearing existing timer for ${businessId}`)
-      clearInterval(businessTimers.current[businessId])
-      delete businessTimers.current[businessId]
     }
 
     const speedMultiplier = safeNumber(state.speedMultiplier, 1)
@@ -1345,80 +899,34 @@ export default function Home() {
     const startTime = Date.now()
 
     if (DEBUG)
-      console.log(`Starting business ${businessId} with duration ${duration}ms, speed multiplier: ${speedMultiplier}`)
+      console.log(
+        `Starting region business ${businessId} with duration ${duration}ms, speed multiplier: ${speedMultiplier}`,
+      )
 
-    // Set initial progress - update ref first
-    businessStatesRef.current = {
-      ...businessStatesRef.current,
-      [businessId]: {
-        ...businessStatesRef.current[businessId],
-        progress: 0.1,
-        lastCollected: startTime,
-      },
-    }
-
-    // Then update state
-    setBusinessStates((prev) => ({
+    // Set initial progress
+    setRegionBusinessStates((prev) => ({
       ...prev,
       [businessId]: {
         ...prev[businessId],
         progress: 0.1,
         lastCollected: startTime,
+        canCollect: false,
       },
     }))
 
-    // Start interval specific to this business
-    businessTimers.current[businessId] = setInterval(() => {
-      const elapsed = Date.now() - startTime
-      const percent = Math.min((elapsed / duration) * 100, 100)
+    // Also update the ref for immediate access
+    regionBusinessStatesRef.current = {
+      ...regionBusinessStatesRef.current,
+      [businessId]: {
+        ...regionBusinessStatesRef.current[businessId],
+        progress: 0.1,
+        lastCollected: startTime,
+        canCollect: false,
+      },
+    }
 
-      if (DEBUG && Math.floor(percent) % 25 === 0) {
-        console.log(`Business ${businessId} progress: ${percent.toFixed(1)}%`)
-      }
-
-      // Update ref first
-      if (businessStatesRef.current[businessId]) {
-        businessStatesRef.current = {
-          ...businessStatesRef.current,
-          [businessId]: {
-            ...businessStatesRef.current[businessId],
-            progress: percent,
-          },
-        }
-      }
-
-      // Then update state
-      setBusinessStates((prev) => {
-        // If the business no longer exists in the state, clear the timer
-        if (!prev[businessId]) {
-          if (businessTimers.current[businessId]) {
-            clearInterval(businessTimers.current[businessId])
-            delete businessTimers.current[businessId]
-          }
-          return prev
-        }
-
-        return {
-          ...prev,
-          [businessId]: {
-            ...prev[businessId],
-            progress: percent,
-          },
-        }
-      })
-
-      if (percent >= 100) {
-        if (DEBUG) console.log(`Business ${businessId} reached 100%`)
-        clearInterval(businessTimers.current[businessId])
-        delete businessTimers.current[businessId]
-
-        // If this business has a manager, let the manager system handle it
-        const hasManager = businessStatesRef.current[businessId]?.hasManager
-        if (hasManager && DEBUG) {
-          console.log(`Business ${businessId} has a manager, letting manager system handle collection`)
-        }
-      }
-    }, 100) // update every 100ms
+    // Check for achievements
+    checkAchievements()
   }
 
   // Collect revenue from a business
@@ -1432,10 +940,6 @@ export default function Home() {
       // Calculate revenue
       const revenue = calculateRevenue(businessId)
 
-      if (DEBUG) {
-        console.log(`Collecting from ${businessId}, calculated revenue: ${revenue.toFixed(2)}`)
-      }
-
       // Update cash and stats
       setCash((prev) => prev + revenue)
       setLifetimeEarnings((prev) => prev + revenue)
@@ -1460,6 +964,47 @@ export default function Home() {
     } catch (error) {
       logError(error, `collectBusiness for ${businessId}`)
       // Provide fallback behavior or show error message to user
+    }
+  }
+
+  // Collect revenue from a region business
+  const collectRegionBusiness = (businessId: string) => {
+    try {
+      const business = getRegionBusinessById(businessId)
+      const state = regionBusinessStates[businessId]
+
+      if (!business || !state || !state.owned || state.progress < 100) return
+
+      // Calculate revenue
+      const revenue = calculateRegionBusinessRevenue(businessId)
+
+      // Update cash and stats
+      setCash((prev) => prev + revenue)
+      setLifetimeEarnings((prev) => prev + revenue)
+      setStats((prev) => ({
+        ...prev,
+        totalEarnings: safeNumber(prev.totalEarnings, 0) + revenue,
+        totalCustomersServed: safeNumber(prev.totalCustomersServed, 0) + 1,
+      }))
+
+      // Reset progress
+      setRegionBusinessStates((prev) => ({
+        ...prev,
+        [businessId]: {
+          ...prev[businessId],
+          progress: 0,
+          lastCollected: null,
+          canCollect: false,
+        },
+      }))
+
+      // Check for achievements
+      checkAchievements()
+
+      // Play collect sound
+      soundManager.play("collect")
+    } catch (error) {
+      logError(error, `collectRegionBusiness for ${businessId}`)
     }
   }
 
@@ -1508,6 +1053,49 @@ export default function Home() {
 
     // Check for achievements
     checkAchievements()
+  }
+
+  // Buy a region business
+  const buyRegionBusiness = (businessId: string) => {
+    const business = getRegionBusinessById(businessId)
+    if (!business) return
+
+    // Calculate cost
+    const ownedCount = regionBusinessStates[businessId]?.owned || 0
+    const cost = business.baseCost * Math.pow(business.costMultiplier, ownedCount)
+
+    // Check if player has enough cash
+    if (cash < cost) return
+
+    // Check if already owned (can only buy once)
+    if (regionBusinessStates[businessId]?.owned) return
+
+    // Update cash and business state
+    setCash((prev) => prev - cost)
+    setRegionBusinessStates((prev) => ({
+      ...prev,
+      [businessId]: {
+        ...prev[businessId],
+        owned: true,
+        speedMultiplier: 1,
+        profitMultiplier: 1,
+        lastCollected: null,
+        progress: 0,
+        canCollect: false,
+      },
+    }))
+
+    // Update stats
+    setStats((prev) => ({
+      ...prev,
+      maxBusinessOwned: prev.maxBusinessOwned + 1,
+    }))
+
+    // Check for achievements
+    checkAchievements()
+
+    // Play buy sound
+    soundManager.play("buy")
   }
 
   // Buy 10 businesses
@@ -1665,8 +1253,98 @@ export default function Home() {
   }
 
   // Process manager collection
+  const processManagerCollection = (businessId: string, amount: number) => {
+    if (DEBUG) {
+      console.log(`Manager collecting ${amount} from ${businessId}`)
+      console.log(`Current cash: ${cashRef.current}`)
+    }
+
+    // Ensure amount is a valid number and greater than 0
+    const safeAmount = isNaN(amount) || amount <= 0 ? 1 : amount
+
+    // Update cash and stats
+    setCash((prev) => {
+      const newCash = prev + safeAmount
+      if (DEBUG) console.log(`New cash after collection: ${newCash}`)
+      return newCash
+    })
+
+    setLifetimeEarnings((prev) => prev + safeAmount)
+    setStats((prev) => ({
+      ...prev,
+      totalEarnings: prev.totalEarnings + safeAmount,
+      totalCustomersServed: prev.totalCustomersServed + (businessStates[businessId]?.owned || 0),
+    }))
+
+    // Find the manager for this business
+    const manager = initialManagers.find((m) => m.businessId === businessId)
+    if (manager) {
+      // Update manager statistics
+      setManagerStats((prev) => {
+        const now = Date.now()
+        const managerId = manager.id
+        const business = initialBusinesses.find((b) => b.id === businessId)
+        const currentStats = prev[managerId] || {
+          totalEarnings: 0,
+          collections: 0,
+          lastCollection: 0,
+          businessName: business?.name || "Unknown",
+          managerName: manager.name,
+        }
+
+        return {
+          ...prev,
+          [managerId]: {
+            ...currentStats,
+            totalEarnings: currentStats.totalEarnings + safeAmount,
+            collections: currentStats.collections + 1,
+            lastCollection: now,
+          },
+        }
+      })
+    }
+
+    // Add visual feedback for manager collection
+    setManagerCollections((prev) => ({
+      ...prev,
+      [businessId]: {
+        amount: safeAmount,
+        timestamp: Date.now(),
+      },
+    }))
+
+    // Check for achievements
+    checkAchievements()
+  }
 
   // Update business state
+  const updateBusinessState = (businessId: string, updates: any) => {
+    if (DEBUG) console.log(`Updating business state for ${businessId}:`, updates)
+
+    // Immediately update the ref for faster access by other functions
+    if (businessStatesRef.current[businessId]) {
+      businessStatesRef.current = {
+        ...businessStatesRef.current,
+        [businessId]: {
+          ...businessStatesRef.current[businessId],
+          ...updates,
+        },
+      }
+    }
+
+    // Then update the state
+    setBusinessStates((prev) => {
+      if (!prev[businessId]) return prev // Skip if business doesn't exist
+
+      return {
+        ...prev,
+        [businessId]: {
+          ...prev[businessId],
+          ...updates,
+        },
+      }
+    })
+  }
 
   // Buy a manager
   const buyManager = (managerId: string) => {
@@ -1721,10 +1399,10 @@ export default function Home() {
     const state = businessStatesRef.current[manager.businessId]
     if (state && state.owned > 0 && state.progress === 0) {
       if (DEBUG) console.log(`Starting idle business ${manager.businessId} after hiring manager`)
-      _startBusiness(manager.businessId)
+      startBusiness(manager.businessId)
     }
 
-    // Always recreate the manager system after hiring a new manager
+    // Always recreate the manager system when a new manager is hired
     if (DEBUG) console.log("Recreating manager system after hiring new manager")
     if (managerSystemTimer.current) {
       clearInterval(managerSystemTimer.current)
@@ -1851,19 +1529,18 @@ export default function Home() {
 
     // Apply upgrade effect
     setBusinessStates((prev) => {
-      const newState = {
-        ...prev,
-        [upgrade.businessId]: {
-          ...prev[upgrade.businessId],
+      const newState = { ...prev }
+      Object.keys(newState).forEach((businessId) => {
+        newState[businessId] = {
+          ...newState[businessId],
           [upgrade.type === "profit" ? "profitMultiplier" : "speedMultiplier"]:
-            prev[upgrade.businessId][upgrade.type === "profit" ? "profitMultiplier" : "speedMultiplier"] *
+            newState[businessId][upgrade.type === "profit" ? "profitMultiplier" : "speedMultiplier"] *
             upgrade.multiplier,
-        },
-      }
+        }
 
-      // Apply premium item effects
-      newState[upgrade.businessId] = applyPremiumItemEffects(newState[upgrade.businessId])
-
+        // Apply premium item effects
+        newState[businessId] = applyPremiumItemEffects(newState[businessId])
+      })
       return newState
     })
   }
@@ -2136,6 +1813,7 @@ export default function Home() {
     // Apply gold coins effect (2x money earned)
     const goldCoinsMultiplier = premiumItems["gold_coins"] ? 2 : 1
 
+    // Collect from standard businesses
     Object.keys(businessStates).forEach((businessId) => {
       const business = initialBusinesses.find((b) => b.id === businessId)
       const state = businessStates[businessId]
@@ -2160,6 +1838,32 @@ export default function Home() {
       }))
     })
 
+    // Collect from region businesses
+    Object.keys(regionBusinessStates).forEach((businessId) => {
+      const business = getRegionBusinessById(businessId)
+      const state = regionBusinessStates[businessId]
+
+      if (!business || !state || !state.owned || state.progress < 100) return
+
+      // Calculate revenue
+      const revenue = calculateRegionBusinessRevenue(businessId)
+      // Ensure revenue is a valid number
+      const safeRevenue = isNaN(revenue) ? 0 : revenue
+
+      totalRevenue += safeRevenue
+
+      // Reset progress
+      setRegionBusinessStates((prev) => ({
+        ...prev,
+        [businessId]: {
+          ...prev[businessId],
+          progress: 0,
+          lastCollected: null,
+          canCollect: false,
+        },
+      }))
+    })
+
     // Update cash and stats
     if (totalRevenue > 0) {
       setCash((prev) => prev + totalRevenue)
@@ -2169,12 +1873,21 @@ export default function Home() {
         totalEarnings: prev.totalEarnings + totalRevenue,
       }))
     }
-  }, [angelInvestors, prestigeLevel, businessStates, calculateRevenue, premiumItems])
+  }, [
+    angelInvestors,
+    prestigeLevel,
+    businessStates,
+    calculateRevenue,
+    premiumItems,
+    regionBusinessStates,
+    calculateRegionBusinessRevenue,
+  ])
 
   // Start all idle businesses
   const startAllBusinesses = useCallback(() => {
     const now = Date.now()
 
+    // Start standard businesses
     setBusinessStates((prev) => {
       const newState = { ...prev }
       Object.keys(newState).forEach((businessId) => {
@@ -2184,6 +1897,23 @@ export default function Home() {
             ...state,
             progress: 0.1,
             lastCollected: now,
+          }
+        }
+      })
+      return newState
+    })
+
+    // Start region businesses
+    setRegionBusinessStates((prev) => {
+      const newState = { ...prev }
+      Object.keys(newState).forEach((businessId) => {
+        const state = newState[businessId]
+        if (state && state.owned && state.progress === 0) {
+          newState[businessId] = {
+            ...state,
+            progress: 0.1,
+            lastCollected: now,
+            canCollect: false,
           }
         }
       })
@@ -2257,6 +1987,62 @@ export default function Home() {
 
     return () => clearInterval(interval)
   }, [gameStarted, businessStates])
+
+  // Update region business progress
+  useEffect(() => {
+    if (!gameStarted || Object.keys(regionBusinessStates).length === 0) return
+
+    const interval = setInterval(() => {
+      const now = Date.now()
+
+      setRegionBusinessStates((prev) => {
+        const newState = { ...prev }
+        let updated = false
+
+        Object.keys(newState).forEach((businessId) => {
+          const state = newState[businessId]
+          const business = getRegionBusinessById(businessId)
+
+          if (!business || !state || !state.owned) return
+
+          // Update progress for businesses that are currently producing
+          if (state.progress > 0 && state.progress < 100 && state.lastCollected) {
+            const elapsedTime = now - state.lastCollected
+            const baseTime = business.baseTime * 1000 // Convert to ms
+            const speedMultiplier = state.speedMultiplier || 1
+            const adjustedTime = baseTime / speedMultiplier
+
+            if (isNaN(adjustedTime) || adjustedTime <= 0) {
+              console.error("Invalid adjusted time for region business:", { baseTime, speedMultiplier, adjustedTime })
+              return
+            }
+
+            const progressIncrease = (elapsedTime / adjustedTime) * 100
+            const newProgress = Math.min(100, state.progress + progressIncrease)
+
+            if (newProgress !== state.progress) {
+              newState[businessId] = {
+                ...state,
+                progress: newProgress,
+                lastCollected: now,
+              }
+
+              // Mark as ready to collect if progress is 100%
+              if (newProgress >= 100) {
+                newState[businessId].canCollect = true
+              }
+
+              updated = true
+            }
+          }
+        })
+
+        return updated ? newState : prev
+      })
+    }, 100) // Update every 100ms for smooth progress
+
+    return () => clearInterval(interval)
+  }, [gameStarted]) // Remove regionBusinessStates from dependencies
 
   // Setup manager system when the game starts or when managers change
   useEffect(() => {
@@ -2385,8 +2171,6 @@ export default function Home() {
     localStorage.clear()
   }, [])
 
-  // Add this function to the Home component
-
   // Force start all businesses with managers
   const forceStartAllManagerBusinesses = useCallback(() => {
     if (DEBUG) console.log("Force starting all businesses with managers")
@@ -2418,6 +2202,87 @@ export default function Home() {
     // Reset the manager system
     resetManagerSystem()
   }, [resetManagerSystem])
+
+  // Fix the region change logic to prevent loops
+
+  // Modify the handleRegionChange function to prevent loops
+  const handleRegionChange = (newRegion: string) => {
+    // Don't do anything if we're already traveling to this region
+    if (showTravelAnimation || newRegion === activeRegion) return
+
+    // Save current region for animation
+    setTravelFromRegion(activeRegion)
+    setTravelToRegion(newRegion)
+
+    // Show travel animation
+    setShowTravelAnimation(true)
+
+    // Play travel sound
+    try {
+      soundManager.play("success")
+    } catch (error) {
+      console.error("Error playing sound:", error)
+    }
+  }
+
+  // Modify the setActiveRegion function to use the animation
+  const setActiveRegionWithAnimation = (region: string) => {
+    if (region === activeRegion) return
+
+    handleRegionChange(region)
+    // The actual region change will happen after animation completes
+  }
+
+  // In the Home component, add a function to get region-specific businesses
+  const getRegionBusinesses = useCallback((region: string) => {
+    // Get the base businesses
+    const baseBusinesses = [...initialBusinesses]
+
+    // Get region-specific businesses
+    const regionMappings = getBusinessesForRegionMapping(region)
+
+    // Map the businesses to their region-specific versions
+    const mappedBusinesses = baseBusinesses.map((business, index) => {
+      if (index < regionMappings.length) {
+        return {
+          ...business,
+          name: regionMappings[index].name,
+          icon: regionMappings[index].icon,
+        }
+      }
+      return business
+    })
+
+    // Add any additional businesses for the region
+    if (region === "europe" && regionMappings.length > baseBusinesses.length) {
+      // Add the Coffee Castle business
+      const coffeeCastle = regionMappings.find((b) => b.id === "eu_coffee_castle")
+      if (coffeeCastle) {
+        mappedBusinesses.push({
+          id: "coffee_castle",
+          name: coffeeCastle.name,
+          icon: coffeeCastle.icon,
+          baseCost: coffeeCastle.baseCost,
+          baseRevenue: coffeeCastle.baseRevenue,
+          baseTime: coffeeCastle.baseTime,
+          costMultiplier: coffeeCastle.costMultiplier,
+          revenueMultiplier: coffeeCastle.revenueMultiplier,
+        })
+      }
+    }
+
+    return mappedBusinesses
+  }, [])
+
+  // Define a function to call after the animation completes
+  const onTravelAnimationComplete = useCallback(() => {
+    // First set the active region
+    setActiveRegion(travelToRegion)
+    // Then hide the animation after a small delay
+    setTimeout(() => {
+      setShowTravelAnimation(false)
+    }, 50)
+  }, [travelToRegion])
 
   // Wrap the entire return in an error boundary
   return (
@@ -2486,7 +2351,8 @@ export default function Home() {
                 }
                 angelInvestors={angelInvestors}
                 prestigeLevel={prestigeLevel}
-                prestigeMultiplier={1 + angelInvestors * getAngelEffectiveness()} // Add this line to pass the prestige multiplier
+                prestigeMultiplier={calculatePrestigeMultiplier()}
+                activeRegion={activeRegion}
                 onShowManagers={() => setShowManagerModal(true)}
                 onShowUpgrades={() => setShowUpgradeModal(true)}
                 onShowStats={() => setShowStatsModal(true)}
@@ -2495,11 +2361,24 @@ export default function Home() {
                 onShowFAQ={() => setShowFAQModal(true)}
                 onShowPrestigeShop={() => setShowPrestigeShopModal(true)}
                 onShowMiniGames={() => setShowMiniGamesModal(true)}
+                onShowEmpireMap={() => setShowEmpireMap(true)}
               />
 
               <main className="container mx-auto p-4 pb-24">
+                <RegionBusinessGrid
+                  activeRegion={activeRegion}
+                  regionBusinessStates={regionBusinessStates}
+                  businessStates={businessStates} // Add this prop
+                  cash={cash}
+                  onBuyRegionBusiness={buyRegionBusiness}
+                  onCollectRegionBusiness={collectRegionBusiness}
+                  onStartRegionBusiness={startRegionBusiness}
+                  onShowEmpireMap={() => setShowEmpireMap(true)}
+                  onSetActiveRegion={setActiveRegionWithAnimation} // Use the animation version
+                  showTravelAnimation={showTravelAnimation} // Pass this prop
+                />
                 <BusinessGrid
-                  businesses={initialBusinesses}
+                  businesses={getRegionBusinesses(activeRegion)}
                   businessStates={businessStates}
                   cash={cash}
                   onBuy={buyBusiness}
@@ -2511,6 +2390,7 @@ export default function Home() {
                   getTimeRemaining={getTimeRemaining}
                   onClick={() => setStats((prev) => ({ ...prev, totalClicks: prev.totalClicks + 1 }))}
                   managerCollections={managerCollections}
+                  activeRegion={activeRegion}
                 />
               </main>
 
@@ -2531,7 +2411,7 @@ export default function Home() {
                 onClose={() => setShowManagerModal(false)}
                 managers={initialManagers}
                 cash={cash}
-                onBuyManager={_buyManager}
+                onBuyManager={buyManager}
                 businesses={businessStates}
                 managerStats={managerStats}
               />
@@ -2659,6 +2539,29 @@ export default function Home() {
                 onClearLocalStorage={clearLocalStorage}
                 onForceStartAllManagerBusinesses={forceStartAllManagerBusinesses}
               />
+              <EmpireMapModal
+                show={showEmpireMap}
+                onClose={() => setShowEmpireMap(false)}
+                businessStates={businessStates}
+                regionBusinessStates={regionBusinessStates}
+                totalBusinessesOwned={Object.values(businessStates).reduce(
+                  (total, state) => total + (state?.owned || 0),
+                  0,
+                )}
+                lifetimeEarnings={lifetimeEarnings}
+                prestigeLevel={prestigeLevel}
+                activeRegion={activeRegion}
+                onSetActiveRegion={setActiveRegionWithAnimation}
+                onBuyRegionBusiness={buyRegionBusiness}
+                cash={cash}
+              />
+              {showTravelAnimation && (
+                <RegionTravelAnimation
+                  fromRegion={travelFromRegion}
+                  toRegion={travelToRegion}
+                  onComplete={onTravelAnimationComplete}
+                />
+              )}
             </>
           )}
         </div>

@@ -1,7 +1,7 @@
 // Sound manager for the game
 // This handles loading and playing sound effects and background music
 
-class SoundManager {
+export class SoundManager {
   private sounds: { [key: string]: HTMLAudioElement } = {}
   private musicTracks: { [key: string]: HTMLAudioElement } = {}
   private enabled = true
@@ -232,9 +232,15 @@ class SoundManager {
       this.playMusic(track)
     }
   }
+
+  // Add cleanup method
+  public cleanup() {
+    this.stopMusic()
+  }
 }
 
 // Create a singleton instance
 const soundManager = new SoundManager()
 
+// Export both the class and the instance
 export default soundManager

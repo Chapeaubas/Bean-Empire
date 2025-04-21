@@ -94,7 +94,7 @@ export default function BusinessCard({
   const [showDriveThruComic, setShowDriveThruComic] = useState(false)
   const [hasSeenCoffeeShopComic, setHasSeenCoffeeShopComic] = useState(false)
   const [hasSeenCoffeeCarComic, setHasSeenCoffeeCarComic] = useState(false)
-  const [hasSeenDriveThruComic, setHasSeenDriveThruComic] = useState(false)
+  const [hasSeenCoffeeDriveThruComic, setHasSeenCoffeeDriveThruComic] = useState(false)
   const [comicToShow, setComicToShow] = useState<"coffee_shop" | "coffee_car" | "coffee_drive_thru" | null>(null)
 
   // Use a default value if businessState is undefined
@@ -130,7 +130,7 @@ export default function BusinessCard({
         }
 
         if (driveThruComicSeen === "true") {
-          setHasSeenDriveThruComic(true)
+          setHasSeenCoffeeDriveThruComic(true)
         }
       }
     } catch (error) {
@@ -138,7 +138,7 @@ export default function BusinessCard({
       // Default to not showing comics if localStorage fails
       setHasSeenCoffeeShopComic(true)
       setHasSeenCoffeeCarComic(true)
-      setHasSeenDriveThruComic(true)
+      setHasSeenCoffeeDriveThruComic(true)
     }
   }, [])
 
@@ -275,7 +275,7 @@ export default function BusinessCard({
       setComicToShow("coffee_shop")
     } else if (canShowCoffeeCarComic && !hasSeenCoffeeCarComic && state.owned === 0) {
       setComicToShow("coffee_car")
-    } else if (canShowDriveThruComic && !hasSeenDriveThruComic && state.owned === 0) {
+    } else if (canShowDriveThruComic && !hasSeenCoffeeDriveThruComic && state.owned === 0) {
       setComicToShow("coffee_drive_thru")
     } else {
       onBuy()
@@ -286,7 +286,7 @@ export default function BusinessCard({
     canShowDriveThruComic,
     hasSeenCoffeeShopComic,
     hasSeenCoffeeCarComic,
-    hasSeenDriveThruComic,
+    hasSeenCoffeeDriveThruComic,
     onBuy,
     state.owned,
   ])
@@ -318,7 +318,7 @@ export default function BusinessCard({
   // Handle drive-thru comic close with localStorage error handling
   const handleDriveThruComicClose = useCallback(() => {
     setShowDriveThruComic(false)
-    setHasSeenDriveThruComic(true)
+    setHasSeenCoffeeDriveThruComic(true)
     try {
       localStorage.setItem("hasSeenCoffeeDriveThruComic", "true")
     } catch (error) {
@@ -372,7 +372,7 @@ export default function BusinessCard({
         }
       } else if (comicType === "coffee_drive_thru") {
         setShowDriveThruComic(false)
-        setHasSeenDriveThruComic(true)
+        setHasSeenCoffeeDriveThruComic(true)
         try {
           localStorage.setItem("hasSeenCoffeeDriveThruComic", "true")
         } catch (error) {
@@ -385,6 +385,10 @@ export default function BusinessCard({
     [onBuy],
   )
 
+  // In the BusinessCard component, add a check for region-specific business names and icons
+  // This is a small change to ensure the correct names and icons are displayed
+
+  // Update the return statement to use the business name and icon from the props
   return (
     <>
       <motion.div

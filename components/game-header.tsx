@@ -11,12 +11,14 @@ import {
   HelpCircle,
   Sparkles,
   Coins,
+  Globe,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logError } from "@/lib/error-utils"
 import { formatCurrency } from "@/lib/utils"
 import SoundControls from "@/components/sound-controls"
 
+// Add activeRegion to the props
 interface GameHeaderProps {
   coins: number
   level: number
@@ -24,6 +26,7 @@ interface GameHeaderProps {
   angelInvestors: number
   prestigeLevel: number
   prestigeMultiplier: number // Add this new prop
+  activeRegion: string
   onShowManagers: () => void
   onShowUpgrades: () => void
   onShowStats: () => void
@@ -58,6 +61,7 @@ export default function GameHeader({
   angelInvestors,
   prestigeLevel,
   prestigeMultiplier, // Add this new parameter
+  activeRegion,
   onShowManagers,
   onShowUpgrades,
   onShowStats,
@@ -78,6 +82,26 @@ export default function GameHeader({
 
   // Ensure coins value is safe
   const safeCoins = isNaN(coins) ? 0 : coins
+
+  // Add this function to get the region name
+  const getRegionName = (regionId: string) => {
+    switch (regionId) {
+      case "north_america":
+        return "North America"
+      case "europe":
+        return "Europe"
+      case "asia":
+        return "Asia"
+      case "south_america":
+        return "South America"
+      case "africa":
+        return "Africa"
+      case "australia":
+        return "Australia"
+      default:
+        return "Unknown Region"
+    }
+  }
 
   return (
     <header className="bg-gradient-to-r from-amber-900 to-amber-800 p-3 shadow-md sticky top-0 z-20 border-b border-amber-700">
@@ -262,6 +286,12 @@ export default function GameHeader({
               <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-purple-300" />
               <span className="whitespace-nowrap">
                 <span className="font-bold">{prestigeMultiplier.toFixed(2)}x</span>
+              </span>
+            </div>
+            <div className="bg-blue-800 rounded-lg px-2 md:px-3 py-1 flex items-center">
+              <Globe className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-blue-300" />
+              <span className="whitespace-nowrap">
+                <span className="font-bold">{getRegionName(activeRegion)}</span>
               </span>
             </div>
             <div className="bg-amber-800 rounded-lg px-2 md:px-3 py-1 flex items-center">

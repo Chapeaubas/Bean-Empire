@@ -56,6 +56,18 @@ export default function EmpireMapModal({
   const [loading, setLoading] = useState(true)
   const [unlockedRegions, setUnlockedRegions] = useState<Record<string, boolean>>({})
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
   // Initialize region data safely
   useEffect(() => {
@@ -242,7 +254,7 @@ export default function EmpireMapModal({
 
   // Render region tooltip
   const renderRegionTooltip = (region: string) => {
-    if (region !== hoveredRegion || unlockedRegions[region]) return null
+    if (region !== hoveredRegion || unlockedRegions[region] || isMobile) return null
 
     const requirements = getRegionRequirements(region)
     if (!requirements) return null
@@ -251,8 +263,8 @@ export default function EmpireMapModal({
       <div
         className="absolute z-10 bg-white/90 border-2 border-amber-400 rounded-lg p-3 shadow-lg w-64 text-left"
         style={{
-          top: getRegionPosition(region).top as string,
-          left: `calc(${getRegionPosition(region).left as string} + 30px)`,
+          top: getRegionPosition(region, isMobile).top as string,
+          left: `calc(${getRegionPosition(region, isMobile).left as string} + 30px)`,
         }}
       >
         <h4 className="font-bold text-amber-900 mb-1 flex items-center">
@@ -280,10 +292,10 @@ export default function EmpireMapModal({
 
   return (
     <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-amber-900 flex items-center">
-            <Globe className="h-6 w-6 mr-2 text-amber-700" />
+          <DialogTitle className="text-xl sm:text-2xl font-bold text-amber-900 flex items-center">
+            <Globe className="h-5 w-5 sm:h-6 sm:w-6 mr-2 text-amber-700" />
             Bean Empire World Map
           </DialogTitle>
         </DialogHeader>
@@ -319,7 +331,7 @@ export default function EmpireMapModal({
               </motion.div>
             )}
 
-            <div className="relative w-full h-[300px] bg-blue-100 rounded-lg overflow-hidden mb-4">
+            <div className="relative w-full h-[200px] sm:h-[300px] bg-blue-100 rounded-lg overflow-hidden mb-4">
               <Image
                 src="/blue-continent-silhouette.png"
                 alt="World Map"
@@ -340,9 +352,9 @@ export default function EmpireMapModal({
                 const isUnlocked = unlockedRegions[region]
 
                 return (
-                  <div key={region} className="absolute" style={getRegionPosition(region)}>
+                  <div key={region} className="absolute" style={getRegionPosition(region, isMobile)}>
                     <button
-                      className={`transform -translate-x-1/2 -translate-y-1/2 p-2 rounded-full 
+                      className={`transform -translate-x-1/2 -translate-y-1/2 p-1.5 sm:p-2 rounded-full 
                         ${isActive ? "bg-amber-500" : isUnlocked ? "bg-amber-300" : "bg-gray-400"} 
                         hover:bg-amber-400 transition-colors relative`}
                       onClick={() => handleRegionSelect(region)}
@@ -353,21 +365,21 @@ export default function EmpireMapModal({
 
                       {/* Lock icon for locked regions */}
                       {!isUnlocked && (
-                        <Lock className="absolute -top-3 -right-3 h-4 w-4 text-red-500 bg-white rounded-full p-0.5" />
+                        <Lock className="absolute -top-2 -right-2 h-3 w-3 sm:h-4 sm:w-4 text-red-500 bg-white rounded-full p-0.5" />
                       )}
 
                       {/* Badge showing owned/total businesses */}
                       {ownedCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] sm:text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
                           {ownedCount}
                         </span>
                       )}
                     </button>
 
-                    {/* Region name label */}
-                    <div className="absolute top-6 left-0 transform -translate-x-1/2 whitespace-nowrap">
+                    {/* Region name label - hide on mobile */}
+                    <div className="absolute top-5 sm:top-6 left-0 transform -translate-x-1/2 whitespace-nowrap hidden sm:block">
                       <span
-                        className={`text-xs font-bold ${isUnlocked ? "bg-white/80" : "bg-gray-200/80"} px-2 py-1 rounded shadow`}
+                        className={`text-[10px] sm:text-xs font-bold ${isUnlocked ? "bg-white/80" : "bg-gray-200/80"} px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow`}
                       >
                         {region}
                       </span>
@@ -381,7 +393,7 @@ export default function EmpireMapModal({
             </div>
 
             <Tabs defaultValue={selectedRegion} value={selectedRegion} onValueChange={setSelectedRegion}>
-              <TabsList className="w-full mb-4">
+              <TabsList className="w-full mb-4 flex-wrap h-auto">
                 {regionsList.map((region) => {
                   const ownedCount = getOwnedBusinessesInRegion(region)
                   const totalCount = getBusinessesForRegion(region).length
@@ -391,13 +403,13 @@ export default function EmpireMapModal({
                     <TabsTrigger
                       key={region}
                       value={region}
-                      className={`flex-1 ${!isUnlocked ? "opacity-70" : ""}`}
+                      className={`flex-1 text-xs sm:text-sm py-1 ${!isUnlocked ? "opacity-70" : ""}`}
                       disabled={!isUnlocked}
                     >
-                      {region}
+                      {isMobile ? region.split(" ")[0] : region}
                       {!isUnlocked && <Lock className="ml-1 h-3 w-3" />}
                       {ownedCount > 0 && (
-                        <span className="ml-2 bg-green-500 text-white text-xs rounded-full px-2 py-0.5">
+                        <span className="ml-1 sm:ml-2 bg-green-500 text-white text-[10px] sm:text-xs rounded-full px-1 sm:px-2 py-0.5">
                           {ownedCount}/{totalCount}
                         </span>
                       )}
@@ -416,35 +428,37 @@ export default function EmpireMapModal({
                     <>
                       {region === "North America" ? (
                         <motion.div
-                          className="bg-amber-50 border-2 border-amber-200 rounded-lg p-6"
+                          className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 sm:p-6"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.5 }}
                         >
-                          <h3 className="text-xl font-bold text-amber-900 mb-4">The Coffee Journey in North America</h3>
+                          <h3 className="text-lg sm:text-xl font-bold text-amber-900 mb-3 sm:mb-4">
+                            The Coffee Journey in North America
+                          </h3>
 
-                          <div className="prose prose-amber">
-                            <p className="mb-3">
+                          <div className="prose prose-amber text-sm sm:text-base">
+                            <p className="mb-2 sm:mb-3">
                               Coffee first arrived in North America in the mid-1600s, when the British brought it to New
                               Amsterdam, which would later become New York City. By the time of the American Revolution
                               in 1773, coffee had become so popular that the colonists revolted against the heavy tea
                               taxes imposed by King George III, switching from tea to coffee as an act of patriotism.
                             </p>
 
-                            <p className="mb-3">
+                            <p className="mb-2 sm:mb-3">
                               The first coffee house in America opened in Boston in 1689. These establishments quickly
                               became centers of social interaction and political discussion. The famous Green Dragon
                               Coffee House in Boston was referred to as the "headquarters of the Revolution" by Daniel
                               Webster.
                             </p>
 
-                            <p className="mb-3">
+                            <p className="mb-2 sm:mb-3">
                               In the 1800s, pioneers moving west brought coffee with them, brewing it over campfires as
                               they traveled. By the early 20th century, coffee had become a staple in American
                               households, with brands like Folgers and Maxwell House becoming household names.
                             </p>
 
-                            <p className="mb-3">
+                            <p className="mb-2 sm:mb-3">
                               The specialty coffee movement began in the 1960s in the western United States,
                               particularly in San Francisco. The first Starbucks opened in Seattle's Pike Place Market
                               in 1971, forever changing how Americans consumed coffee.
@@ -458,10 +472,10 @@ export default function EmpireMapModal({
                             </p>
                           </div>
 
-                          <div className="mt-6 flex justify-center">
+                          <div className="mt-4 sm:mt-6 flex justify-center">
                             <Button
                               onClick={() => handleRegionSelect(region)}
-                              className="bg-amber-600 hover:bg-amber-700"
+                              className="bg-amber-600 hover:bg-amber-700 text-sm"
                             >
                               Explore North American Coffee Businesses
                             </Button>
@@ -469,37 +483,37 @@ export default function EmpireMapModal({
                         </motion.div>
                       ) : region === "Europe" ? (
                         <motion.div
-                          className="bg-amber-50 border-2 border-amber-200 rounded-lg p-6"
+                          className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 sm:p-6"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.5 }}
                         >
-                          <h3 className="text-xl font-bold text-amber-900 mb-4">
+                          <h3 className="text-lg sm:text-xl font-bold text-amber-900 mb-3 sm:mb-4">
                             Your Coffee Empire Expands to Europe
                           </h3>
 
-                          <div className="prose prose-amber">
-                            <p className="mb-3">
+                          <div className="prose prose-amber text-sm sm:text-base">
+                            <p className="mb-2 sm:mb-3">
                               After establishing a strong presence in North America, your Bean Empire is ready for its
                               first international expansion. Europe, with its rich coffee culture and appreciation for
                               quality brews, is the perfect next step for your growing business.
                             </p>
 
-                            <p className="mb-3">
+                            <p className="mb-2 sm:mb-3">
                               Europe's relationship with coffee dates back to the 17th century when Venetian merchants
                               brought the exotic beans from the Ottoman Empire. Coffee houses quickly spread across the
                               continent, becoming centers of intellectual discourse, artistic expression, and political
                               debate.
                             </p>
 
-                            <p className="mb-3">
+                            <p className="mb-2 sm:mb-3">
                               Each European country developed its own unique coffee traditions: Italy's espresso culture
                               gave birth to cappuccinos and lattes; Vienna's elegant coffee houses served coffee with
                               whipped cream and pastries; France embraced the café culture with its leisurely coffee
                               sipping at sidewalk tables.
                             </p>
 
-                            <p className="mb-3">
+                            <p className="mb-2 sm:mb-3">
                               Your market research shows tremendous opportunity across the continent. From cozy cafés in
                               Paris to modern coffee shops in Berlin, from traditional espresso bars in Rome to
                               innovative coffee concepts in Amsterdam, Europe offers diverse markets for your expanding
@@ -514,10 +528,10 @@ export default function EmpireMapModal({
                             </p>
                           </div>
 
-                          <div className="mt-6 flex justify-center">
+                          <div className="mt-4 sm:mt-6 flex justify-center">
                             <Button
                               onClick={() => handleRegionSelect(region)}
-                              className="bg-amber-600 hover:bg-amber-700"
+                              className="bg-amber-600 hover:bg-amber-700 text-sm"
                             >
                               Begin Your European Adventure
                             </Button>
@@ -594,7 +608,28 @@ export default function EmpireMapModal({
   )
 }
 
-function getRegionPosition(region: string): React.CSSProperties {
+function getRegionPosition(region: string, isMobile = false): React.CSSProperties {
+  // Adjust positions for mobile
+  if (isMobile) {
+    switch (region) {
+      case "North America":
+        return { top: "30%", left: "20%" }
+      case "South America":
+        return { top: "60%", left: "30%" }
+      case "Europe":
+        return { top: "25%", left: "48%" }
+      case "Africa":
+        return { top: "50%", left: "50%" }
+      case "Asia":
+        return { top: "35%", left: "70%" }
+      case "Australia":
+        return { top: "70%", left: "80%" }
+      default:
+        return { top: "50%", left: "50%" }
+    }
+  }
+
+  // Desktop positions
   switch (region) {
     case "North America":
       return { top: "30%", left: "20%" }

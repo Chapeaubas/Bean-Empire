@@ -96,6 +96,9 @@ export default function BusinessCard({
   const [hasSeenCoffeeCarComic, setHasSeenCoffeeCarComic] = useState(false)
   const [hasSeenCoffeeDriveThruComic, setHasSeenCoffeeDriveThruComic] = useState(false)
   const [comicToShow, setComicToShow] = useState<"coffee_shop" | "coffee_car" | "coffee_drive_thru" | null>(null)
+  // Add a new state variable for the Coffee Warehouse comic
+  const [showCoffeeWarehouseComic, setShowCoffeeWarehouseComic] = useState(false)
+  const [hasSeenCoffeeWarehouseComic, setHasSeenCoffeeWarehouseComic] = useState(false)
 
   // Use a default value if businessState is undefined
   const state = businessState || {
@@ -109,9 +112,11 @@ export default function BusinessCard({
   }
 
   // Determine which comics to potentially show
-  const canShowCoffeeShopComic = business.id === "coffee_shop"
-  const canShowCoffeeCarComic = business.id === "coffee_house"
-  const canShowDriveThruComic = business.id === "coffee_drive_thru"
+  const canShowCoffeeShopComic = useMemo(() => business.id === "coffee_shop", [business.id])
+  const canShowCoffeeCarComic = useMemo(() => business.id === "coffee_house", [business.id])
+  const canShowDriveThruComic = useMemo(() => business.id === "coffee_drive_thru", [business.id])
+  // Add a check for the Coffee Warehouse comic
+  const canShowCoffeeWarehouseComic = useMemo(() => business.id === "coffee_roastery", [business.id])
 
   // Load comic seen status from localStorage with error handling
   useEffect(() => {
@@ -120,6 +125,7 @@ export default function BusinessCard({
         const shopComicSeen = localStorage.getItem("hasSeenCoffeeShopComic")
         const carComicSeen = localStorage.getItem("hasSeenCoffeeCarComic")
         const driveThruComicSeen = localStorage.getItem("hasSeenCoffeeDriveThruComic")
+        const warehouseComicSeen = localStorage.getItem("hasSeenCoffeeWarehouseComic")
 
         if (shopComicSeen === "true") {
           setHasSeenCoffeeShopComic(true)
@@ -132,6 +138,10 @@ export default function BusinessCard({
         if (driveThruComicSeen === "true") {
           setHasSeenCoffeeDriveThruComic(true)
         }
+
+        if (warehouseComicSeen === "true") {
+          setHasSeenCoffeeWarehouseComic(true)
+        }
       }
     } catch (error) {
       console.error("Error accessing localStorage:", error)
@@ -139,6 +149,7 @@ export default function BusinessCard({
       setHasSeenCoffeeShopComic(true)
       setHasSeenCoffeeCarComic(true)
       setHasSeenCoffeeDriveThruComic(true)
+      setHasSeenCoffeeWarehouseComic(true)
     }
   }, [])
 
@@ -271,12 +282,14 @@ export default function BusinessCard({
       console.error("Error playing sound:", error)
     }
 
-    if (canShowCoffeeShopComic && !hasSeenCoffeeShopComic && state.owned === 0) {
+    if (canShowCoffeeShopComic && !hasSeenCoffeeShopComic) {
       setComicToShow("coffee_shop")
-    } else if (canShowCoffeeCarComic && !hasSeenCoffeeCarComic && state.owned === 0) {
+    } else if (canShowCoffeeCarComic && !hasSeenCoffeeCarComic) {
       setComicToShow("coffee_car")
-    } else if (canShowDriveThruComic && !hasSeenCoffeeDriveThruComic && state.owned === 0) {
+    } else if (canShowDriveThruComic && !hasSeenCoffeeDriveThruComic) {
       setComicToShow("coffee_drive_thru")
+    } else if (canShowCoffeeWarehouseComic && !hasSeenCoffeeWarehouseComic) {
+      setComicToShow("coffee_warehouse")
     } else {
       onBuy()
     }
@@ -284,11 +297,12 @@ export default function BusinessCard({
     canShowCoffeeShopComic,
     canShowCoffeeCarComic,
     canShowDriveThruComic,
+    canShowCoffeeWarehouseComic,
     hasSeenCoffeeShopComic,
     hasSeenCoffeeCarComic,
     hasSeenCoffeeDriveThruComic,
+    hasSeenCoffeeWarehouseComic,
     onBuy,
-    state.owned,
   ])
 
   // Handle coffee shop comic close with localStorage error handling
@@ -327,6 +341,18 @@ export default function BusinessCard({
     onBuy() // Proceed with the purchase after showing the comic
   }, [onBuy])
 
+  // Add a handler for the Coffee Warehouse comic close
+  const handleCoffeeWarehouseComicClose = useCallback(() => {
+    setShowCoffeeWarehouseComic(false)
+    setHasSeenCoffeeWarehouseComic(true)
+    try {
+      localStorage.setItem("hasSeenCoffeeWarehouseComic", "true")
+    } catch (error) {
+      console.error("Error setting localStorage:", error)
+    }
+    onBuy() // Proceed with the purchase after showing the comic
+  }, [onBuy])
+
   // Ensure progress value is a valid number between 0-100
   const safeProgress = useMemo(() => safeNumber(state.progress, 0), [state.progress])
 
@@ -352,8 +378,9 @@ export default function BusinessCard({
   // REMOVED: The useEffect that was automatically setting comicToShow at component mount
   // This was causing comics to appear immediately after game start
 
+  // Update the handleComicClose function to handle the Coffee Warehouse comic
   const handleComicClose = useCallback(
-    (comicType: "coffee_shop" | "coffee_car" | "coffee_drive_thru") => {
+    (comicType: "coffee_shop" | "coffee_car" | "coffee_drive_thru" | "coffee_warehouse") => {
       if (comicType === "coffee_shop") {
         setShowCoffeeShopComic(false)
         setHasSeenCoffeeShopComic(true)
@@ -375,6 +402,14 @@ export default function BusinessCard({
         setHasSeenCoffeeDriveThruComic(true)
         try {
           localStorage.setItem("hasSeenCoffeeDriveThruComic", "true")
+        } catch (error) {
+          console.error("Error setting localStorage:", error)
+        }
+      } else if (comicType === "coffee_warehouse") {
+        setShowCoffeeWarehouseComic(false)
+        setHasSeenCoffeeWarehouseComic(true)
+        try {
+          localStorage.setItem("hasSeenCoffeeWarehouseComic", "true")
         } catch (error) {
           console.error("Error setting localStorage:", error)
         }
@@ -652,6 +687,12 @@ export default function BusinessCard({
         show={comicToShow === "coffee_drive_thru"}
         onClose={() => handleComicClose("coffee_drive_thru")}
         imageSrc="/images/comic3.3.png"
+      />
+
+      <ComicModal
+        show={comicToShow === "coffee_warehouse"}
+        onClose={() => handleComicClose("coffee_warehouse")}
+        imageSrc="/images/comic4.1.png"
       />
     </>
   )

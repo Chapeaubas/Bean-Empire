@@ -1696,7 +1696,8 @@ export default function Home() {
     // In the prestige function, add this line to clear all comic flags
     localStorage.removeItem("hasSeenCoffeeShopComic")
     localStorage.removeItem("hasSeenCoffeeCarComic")
-    localStorage.removeItem("hasSeenDriveThruComic")
+    localStorage.removeItem("hasSeenCoffeeDriveThruComic")
+    localStorage.removeItem("hasSeenCoffeeWarehouseComic")
   }
 
   // Add this function to handle mini-game rewards, after the other game functions

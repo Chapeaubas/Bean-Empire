@@ -96,17 +96,23 @@ export default function BusinessCard({
   const [hasSeenCoffeeCarComic, setHasSeenCoffeeCarComic] = useState(false)
   const [hasSeenCoffeeDriveThruComic, setHasSeenCoffeeDriveThruComic] = useState(false)
   const [comicToShow, setComicToShow] = useState<
-    "coffee_shop" | "coffee_car" | "coffee_drive_thru" | "coffee_warehouse" | "coffee_factory" | "coffee_empire" | null
+    | "coffee_shop"
+    | "coffee_car"
+    | "coffee_drive_thru"
+    | "coffee_warehouse"
+    | "coffee_plantation"
+    | "coffee_factory"
+    | null
   >(null)
   // Add a new state variable for the Coffee Warehouse comic
   const [showCoffeeWarehouseComic, setShowCoffeeWarehouseComic] = useState(false)
   const [hasSeenCoffeeWarehouseComic, setHasSeenCoffeeWarehouseComic] = useState(false)
-  // First, add the new comic state variables near the other comic state variables (around line 90-100)
+  // Add a new state variable for the Coffee Plantation comic after the other comic state variables
+  const [showCoffeePlantationComic, setShowCoffeePlantationComic] = useState(false)
+  const [hasSeenCoffeePlantationComic, setHasSeenCoffeePlantationComic] = useState(false)
+  // Add a new state variable for the Coffee Factory comic
   const [showCoffeeFactoryComic, setShowCoffeeFactoryComic] = useState(false)
   const [hasSeenCoffeeFactoryComic, setHasSeenCoffeeFactoryComic] = useState(false)
-  // Add the new comic state variables for the Coffee Empire comic
-  const [showCoffeeEmpireComic, setShowCoffeeEmpireComic] = useState(false)
-  const [hasSeenCoffeeEmpireComic, setHasSeenCoffeeEmpireComic] = useState(false)
 
   // Use a default value if businessState is undefined
   const state = businessState || {
@@ -125,10 +131,10 @@ export default function BusinessCard({
   const canShowDriveThruComic = useMemo(() => business.id === "coffee_drive_thru", [business.id])
   // Add a check for the Coffee Warehouse comic
   const canShowCoffeeWarehouseComic = useMemo(() => business.id === "coffee_roastery", [business.id])
-  // Add this check to the canShow variables (around line 160-170)
+  // Add this to the canShow checks after the other canShow variables
+  const canShowCoffeePlantationComic = useMemo(() => business.id === "coffee_plantation", [business.id])
+  // Add a check for the Coffee Factory comic
   const canShowCoffeeFactoryComic = useMemo(() => business.id === "coffee_factory", [business.id])
-  // Add the new comic check
-  const canShowCoffeeEmpireComic = useMemo(() => business.id === "coffee_empire", [business.id])
 
   // Load comic seen status from localStorage with error handling
   useEffect(() => {
@@ -138,9 +144,8 @@ export default function BusinessCard({
         const carComicSeen = localStorage.getItem("hasSeenCoffeeCarComic")
         const driveThruComicSeen = localStorage.getItem("hasSeenCoffeeDriveThruComic")
         const warehouseComicSeen = localStorage.getItem("hasSeenCoffeeWarehouseComic")
-        // Add this to the useEffect that loads comic seen status from localStorage (around line 120-150)
+        const plantationComicSeen = localStorage.getItem("hasSeenCoffeePlantationComic")
         const factoryComicSeen = localStorage.getItem("hasSeenCoffeeFactoryComic")
-        const empireComicSeen = localStorage.getItem("hasSeenCoffeeEmpireComic")
 
         if (shopComicSeen === "true") {
           setHasSeenCoffeeShopComic(true)
@@ -157,13 +162,13 @@ export default function BusinessCard({
         if (warehouseComicSeen === "true") {
           setHasSeenCoffeeWarehouseComic(true)
         }
-        // Add this to the useEffect that loads comic seen status from localStorage (around line 120-150)
+
+        if (plantationComicSeen === "true") {
+          setHasSeenCoffeePlantationComic(true)
+        }
+
         if (factoryComicSeen === "true") {
           setHasSeenCoffeeFactoryComic(true)
-        }
-        // Add the new comic status
-        if (empireComicSeen === "true") {
-          setHasSeenCoffeeEmpireComic(true)
         }
       }
     } catch (error) {
@@ -173,8 +178,8 @@ export default function BusinessCard({
       setHasSeenCoffeeCarComic(true)
       setHasSeenCoffeeDriveThruComic(true)
       setHasSeenCoffeeWarehouseComic(true)
+      setHasSeenCoffeePlantationComic(true)
       setHasSeenCoffeeFactoryComic(true)
-      setHasSeenCoffeeEmpireComic(true)
     }
   }, [])
 
@@ -307,19 +312,18 @@ export default function BusinessCard({
       console.error("Error playing sound:", error)
     }
 
-    // Update the handleBuy function to include the new comic (around line 380-400)
-    if (canShowCoffeeShopComic && !hasSeenCoffeeShopComic && state.owned === 0) {
+    if (canShowCoffeeShopComic && !hasSeenCoffeeShopComic) {
       setComicToShow("coffee_shop")
-    } else if (canShowCoffeeCarComic && !hasSeenCoffeeCarComic && state.owned === 0) {
+    } else if (canShowCoffeeCarComic && !hasSeenCoffeeCarComic) {
       setComicToShow("coffee_car")
-    } else if (canShowDriveThruComic && !hasSeenCoffeeDriveThruComic && state.owned === 0) {
+    } else if (canShowDriveThruComic && !hasSeenCoffeeDriveThruComic) {
       setComicToShow("coffee_drive_thru")
-    } else if (canShowCoffeeWarehouseComic && !hasSeenCoffeeWarehouseComic && state.owned === 0) {
+    } else if (canShowCoffeeWarehouseComic && !hasSeenCoffeeWarehouseComic) {
       setComicToShow("coffee_warehouse")
-    } else if (canShowCoffeeFactoryComic && !hasSeenCoffeeFactoryComic && state.owned === 0) {
+    } else if (canShowCoffeePlantationComic && !hasSeenCoffeePlantationComic) {
+      setComicToShow("coffee_plantation")
+    } else if (canShowCoffeeFactoryComic && !hasSeenCoffeeFactoryComic) {
       setComicToShow("coffee_factory")
-    } else if (canShowCoffeeEmpireComic && !hasSeenCoffeeEmpireComic && state.owned === 0) {
-      setComicToShow("coffee_empire")
     } else {
       onBuy()
     }
@@ -328,16 +332,15 @@ export default function BusinessCard({
     canShowCoffeeCarComic,
     canShowDriveThruComic,
     canShowCoffeeWarehouseComic,
+    canShowCoffeePlantationComic,
     canShowCoffeeFactoryComic,
-    canShowCoffeeEmpireComic,
     hasSeenCoffeeShopComic,
     hasSeenCoffeeCarComic,
     hasSeenCoffeeDriveThruComic,
     hasSeenCoffeeWarehouseComic,
+    hasSeenCoffeePlantationComic,
     hasSeenCoffeeFactoryComic,
-    hasSeenCoffeeEmpireComic,
     onBuy,
-    state.owned,
   ])
 
   // Handle coffee shop comic close with localStorage error handling
@@ -388,24 +391,24 @@ export default function BusinessCard({
     onBuy() // Proceed with the purchase after showing the comic
   }, [onBuy])
 
-  // Add a handler for the Coffee Factory comic close (after the other comic handlers, around line 430-450)
-  const handleCoffeeFactoryComicClose = useCallback(() => {
-    setShowCoffeeFactoryComic(false)
-    setHasSeenCoffeeFactoryComic(true)
+  // Add a handler for the Coffee Plantation comic close
+  const handleCoffeePlantationComicClose = useCallback(() => {
+    setShowCoffeePlantationComic(false)
+    setHasSeenCoffeePlantationComic(true)
     try {
-      localStorage.setItem("hasSeenCoffeeFactoryComic", "true")
+      localStorage.setItem("hasSeenCoffeePlantationComic", "true")
     } catch (error) {
       console.error("Error setting localStorage:", error)
     }
     onBuy() // Proceed with the purchase after showing the comic
   }, [onBuy])
 
-  // Add a handler for the Coffee Empire comic close
-  const handleCoffeeEmpireComicClose = useCallback(() => {
-    setShowCoffeeEmpireComic(false)
-    setHasSeenCoffeeEmpireComic(true)
+  // Add a handler for the Coffee Factory comic close
+  const handleCoffeeFactoryComicClose = useCallback(() => {
+    setShowCoffeeFactoryComic(false)
+    setHasSeenCoffeeFactoryComic(true)
     try {
-      localStorage.setItem("hasSeenCoffeeEmpireComic", "true")
+      localStorage.setItem("hasSeenCoffeeFactoryComic", "true")
     } catch (error) {
       console.error("Error setting localStorage:", error)
     }
@@ -437,8 +440,7 @@ export default function BusinessCard({
   // REMOVED: The useEffect that was automatically setting comicToShow at component mount
   // This was causing comics to appear immediately after game start
 
-  // Update the handleComicClose function to handle the Coffee Warehouse comic
-  // Update the handleComicClose function to handle the Coffee Factory comic (around line 460-490)
+  // Update the handleComicClose function to handle all comics
   const handleComicClose = useCallback(
     (
       comicType:
@@ -446,8 +448,8 @@ export default function BusinessCard({
         | "coffee_car"
         | "coffee_drive_thru"
         | "coffee_warehouse"
-        | "coffee_factory"
-        | "coffee_empire",
+        | "coffee_plantation"
+        | "coffee_factory",
     ) => {
       if (comicType === "coffee_shop") {
         setShowCoffeeShopComic(false)
@@ -481,19 +483,19 @@ export default function BusinessCard({
         } catch (error) {
           console.error("Error setting localStorage:", error)
         }
+      } else if (comicType === "coffee_plantation") {
+        setShowCoffeePlantationComic(false)
+        setHasSeenCoffeePlantationComic(true)
+        try {
+          localStorage.setItem("hasSeenCoffeePlantationComic", "true")
+        } catch (error) {
+          console.error("Error setting localStorage:", error)
+        }
       } else if (comicType === "coffee_factory") {
         setShowCoffeeFactoryComic(false)
         setHasSeenCoffeeFactoryComic(true)
         try {
           localStorage.setItem("hasSeenCoffeeFactoryComic", "true")
-        } catch (error) {
-          console.error("Error setting localStorage:", error)
-        }
-      } else if (comicType === "coffee_empire") {
-        setShowCoffeeEmpireComic(false)
-        setHasSeenCoffeeEmpireComic(true)
-        try {
-          localStorage.setItem("hasSeenCoffeeEmpireComic", "true")
         } catch (error) {
           console.error("Error setting localStorage:", error)
         }
@@ -505,32 +507,7 @@ export default function BusinessCard({
   )
 
   // In the BusinessCard component, add a check for region-specific business names and icons
-  const [showComic, setShowComic] = useState(false)
-
-  useEffect(() => {
-    if (comicToShow) {
-      setShowComic(true)
-    } else {
-      setShowComic(false)
-    }
-  }, [comicToShow])
-
-  // Update the handleModalClose function to handle the Coffee Factory comic (around line 500-520)
-  const handleModalClose = () => {
-    if (comicToShow === "coffee_shop") {
-      handleComicClose("coffee_shop")
-    } else if (comicToShow === "coffee_car") {
-      handleComicClose("coffee_car")
-    } else if (comicToShow === "coffee_drive_thru") {
-      handleComicClose("coffee_drive_thru")
-    } else if (comicToShow === "coffee_warehouse") {
-      handleComicClose("coffee_warehouse")
-    } else if (comicToShow === "coffee_factory") {
-      handleComicClose("coffee_factory")
-    } else if (comicToShow === "coffee_empire") {
-      handleComicClose("coffee_empire")
-    }
-  }
+  // This is a small change to ensure the correct names and icons are displayed
 
   // Update the return statement to use the business name and icon from the props
   return (
@@ -781,40 +758,39 @@ export default function BusinessCard({
 
       {/* Comic Modals */}
       <ComicModal
-        show={showComic && comicToShow === "coffee_shop"}
-        onClose={handleModalClose}
+        show={comicToShow === "coffee_shop"}
+        onClose={() => handleComicClose("coffee_shop")}
         imageSrc="/images/comic2.png"
       />
 
       <ComicModal
-        show={showComic && comicToShow === "coffee_car"}
-        onClose={handleModalClose}
+        show={comicToShow === "coffee_car"}
+        onClose={() => handleComicClose("coffee_car")}
         imageSrc="/images/comic3.png"
       />
 
       <ComicModal
-        show={showComic && comicToShow === "coffee_drive_thru"}
-        onClose={handleModalClose}
+        show={comicToShow === "coffee_drive_thru"}
+        onClose={() => handleComicClose("coffee_drive_thru")}
         imageSrc="/images/comic3.3.png"
       />
 
-      {/* Add the Coffee Warehouse comic modal */}
       <ComicModal
-        show={showComic && comicToShow === "coffee_warehouse"}
-        onClose={handleModalClose}
+        show={comicToShow === "coffee_warehouse"}
+        onClose={() => handleComicClose("coffee_warehouse")}
         imageSrc="/images/comic4.1.png"
       />
-      {/* Add the new comic modal to the return statement (around line 800-830) */}
+
       <ComicModal
-        show={showComic && comicToShow === "coffee_factory"}
-        onClose={handleModalClose}
-        imageSrc="/images/comic6.png"
+        show={comicToShow === "coffee_plantation"}
+        onClose={() => handleComicClose("coffee_plantation")}
+        imageSrc="/images/comic5.png"
       />
-      {/* Add the new comic modal to the return statement (around line 800-830) */}
+
       <ComicModal
-        show={showComic && comicToShow === "coffee_empire"}
-        onClose={handleModalClose}
-        imageSrc="/images/comic7.png"
+        show={comicToShow === "coffee_factory"}
+        onClose={() => handleComicClose("coffee_factory")}
+        imageSrc="/images/comic6.png"
       />
     </>
   )

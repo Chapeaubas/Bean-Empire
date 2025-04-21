@@ -4,6 +4,7 @@ import { Star, Users, TrendingUp, Award, Settings, Coffee, ShoppingBag, Sparkles
 import { Button } from "@/components/ui/button"
 import { logError } from "@/lib/error-utils"
 import { formatCurrency } from "@/lib/utils"
+import SoundControls from "@/components/sound-controls"
 
 // Add activeRegion to the props
 interface GameHeaderProps {
@@ -146,7 +147,6 @@ export default function GameHeader({
               <Settings className="h-4 w-4 mr-1" />
               Stats
             </Button>
-            {/* FAQ button moved to global action bar */}
             <Button
               variant="outline"
               size="sm"
@@ -216,7 +216,6 @@ export default function GameHeader({
             >
               <Settings className="h-4 w-4" />
             </Button>
-            {/* FAQ button moved to global action bar */}
             <Button
               variant="outline"
               size="sm"
@@ -239,6 +238,8 @@ export default function GameHeader({
           </div>
 
           <div className="flex flex-wrap gap-3 md:gap-3 text-sm md:text-sm items-center">
+            <SoundControls className="mr-2" />
+
             <div className="bg-amber-800 rounded-lg px-2 md:px-3 py-1 flex items-center">
               <Star className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-amber-300" />
               <span className="whitespace-nowrap">
